@@ -1,14 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ShoppingCart, User, Phone, MapPin, Activity, FileText, Weight, Thermometer } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, User, Phone, MapPin, Activity, FileText } from 'lucide-react'
 import PatientEditForm from './PatientEditForm'
+import VitalsHistory from '@/components/pos/VitalsHistory'
+import { PatientVital } from '@/types/pos'
 
 export default async function PatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   const { id } = await params
 
-  const [{ data: patient }, { data: transactions }] = await Promise.all([
+  const [
+    { data: patient }, 
+    { data: transactions },
+    { data: vitals }
+  ] = await Promise.all([
     supabase.from('patients').select('*').eq('id', id).single(),
     supabase
       .from('transactions')
@@ -16,9 +22,17 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
       .eq('patient_id', id)
       .order('created_at', { ascending: false })
       .limit(10),
+    supabase
+      .from('patient_vitals')
+      .select('*')
+      .eq('patient_id', id)
+      .order('recorded_at', { ascending: false })
   ])
 
   if (!patient) notFound()
+
+  // Use the latest vitals for the summary cards
+  const latestVitals = vitals && vitals.length > 0 ? vitals[0] : null
 
   return (
     <div className="container">
@@ -40,26 +54,29 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '24px', alignItems: 'start' }}>
-        {/* LEFT: Info + Edit */}
+        {/* LEFT: Info + Vitals History */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
-          {/* Vitals Summary Card */}
+          {/* Latest Vitals Summary Card */}
           <div className="grid gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
              <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
                 <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Weight</div>
-                <div style={{ fontSize: '20px', fontWeight: 700 }}>{patient.weight ? `${patient.weight} kg` : '—'}</div>
+                <div style={{ fontSize: '20px', fontWeight: 700 }}>{latestVitals?.weight ? `${latestVitals.weight} kg` : '—'}</div>
              </div>
              <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
                 <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>BP</div>
-                <div style={{ fontSize: '20px', fontWeight: 700 }}>{patient.blood_pressure || '—'}</div>
+                <div style={{ fontSize: '20px', fontWeight: 700 }}>{latestVitals?.blood_pressure || '—'}</div>
              </div>
              <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
                 <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>SPO2</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, color: (patient.spo2 && patient.spo2 < 95) ? 'var(--red)' : 'inherit' }}>
-                  {patient.spo2 ? `${patient.spo2}%` : '—'}
+                <div style={{ fontSize: '20px', fontWeight: 700, color: (latestVitals?.spo2 && latestVitals.spo2 < 95) ? 'var(--red)' : 'inherit' }}>
+                  {latestVitals?.spo2 ? `${latestVitals.spo2}%` : '—'}
                 </div>
              </div>
           </div>
+
+          {/* Vitals History Component */}
+          <VitalsHistory patientId={id} history={(vitals || []) as PatientVital[]} />
 
           {/* Info card */}
           <div className="card">

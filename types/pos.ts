@@ -35,6 +35,18 @@ export interface Patient {
   created_at: string;
 }
 
+export interface PatientVital {
+  id: string;
+  patient_id: string;
+  blood_pressure: string | null;
+  weight: number | null;
+  spo2: number | null;
+  temperature: number | null;
+  pulse_rate: number | null;
+  notes: string | null;
+  recorded_at: string;
+}
+
 export interface Doctor {
   id: string;
   doctor_no: string;

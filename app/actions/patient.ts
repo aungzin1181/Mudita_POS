@@ -17,6 +17,16 @@ export interface PatientFormData {
   medical_history?: string
 }
 
+export interface VitalsFormData {
+  patient_id: string
+  blood_pressure?: string
+  weight?: number
+  spo2?: number
+  temperature?: number
+  pulse_rate?: number
+  notes?: string
+}
+
 /**
  * Create a new patient record.
  */
@@ -83,6 +93,32 @@ export async function updatePatient(id: string, data: PatientFormData) {
   revalidatePath('/patients')
   revalidatePath(`/patients/${id}`)
   return patient
+}
+
+/**
+ * Record a new vitals entry for a patient.
+ */
+export async function recordVitals(data: VitalsFormData) {
+  const supabase = await createClient()
+
+  const { data: record, error } = await supabase
+    .from('patient_vitals')
+    .insert({
+      patient_id: data.patient_id,
+      blood_pressure: data.blood_pressure || null,
+      weight: data.weight || null,
+      spo2: data.spo2 || null,
+      temperature: data.temperature || null,
+      pulse_rate: data.pulse_rate || null,
+      notes: data.notes || null,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  revalidatePath(`/patients/${data.patient_id}`)
+  return record
 }
 
 /**
