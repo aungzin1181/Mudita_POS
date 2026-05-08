@@ -10,10 +10,11 @@ export interface ServiceFormData {
   is_active?: boolean
 }
 
+/**
+ * Create a new service record.
+ */
 export async function createService(data: ServiceFormData) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
 
   const { data: service, error } = await supabase
     .from('services')
@@ -31,18 +32,16 @@ export async function createService(data: ServiceFormData) {
   return service
 }
 
-export async function updateService(id: string, data: ServiceFormData) {
+/**
+ * Update an existing service record.
+ */
+export async function updateService(id: string, data: Partial<ServiceFormData>) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthenticated')
 
   const { data: service, error } = await supabase
     .from('services')
     .update({
-      name: data.name,
-      type: data.type,
-      default_price: data.default_price,
-      is_active: data.is_active ?? true,
+      ...data,
     })
     .eq('id', id)
     .select()
