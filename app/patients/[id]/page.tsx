@@ -1,0 +1,166 @@
+import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft, ShoppingCart, User, Phone, MapPin, Activity, FileText, Weight, Thermometer } from 'lucide-react'
+import PatientEditForm from './PatientEditForm'
+
+export default async function PatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const supabase = await createClient()
+  const { id } = await params
+
+  const [{ data: patient }, { data: transactions }] = await Promise.all([
+    supabase.from('patients').select('*').eq('id', id).single(),
+    supabase
+      .from('transactions')
+      .select('*')
+      .eq('patient_id', id)
+      .order('created_at', { ascending: false })
+      .limit(10),
+  ])
+
+  if (!patient) notFound()
+
+  return (
+    <div className="container">
+      <Link href="/patients" className="btn" style={{ border: 'none', background: 'none', paddingLeft: 0, marginBottom: '16px' }}>
+        <ArrowLeft size={16} /> Back to Patients
+      </Link>
+
+      <div className="page-header" style={{ marginBottom: '24px' }}>
+        <div>
+          <div className="page-eyebrow" style={{ color: 'var(--accent)' }}>{patient.patient_no}</div>
+          <h1 className="page-title">{patient.full_name}</h1>
+        </div>
+        <Link
+          href={`/pos/new?patient_id=${patient.id}&patient_name=${encodeURIComponent(patient.full_name)}`}
+          className="btn btn-primary"
+        >
+          <ShoppingCart size={18} /> New Transaction
+        </Link>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '24px', alignItems: 'start' }}>
+        {/* LEFT: Info + Edit */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Vitals Summary Card */}
+          <div className="grid gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+             <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
+                <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Weight</div>
+                <div style={{ fontSize: '20px', fontWeight: 700 }}>{patient.weight ? `${patient.weight} kg` : '—'}</div>
+             </div>
+             <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
+                <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>BP</div>
+                <div style={{ fontSize: '20px', fontWeight: 700 }}>{patient.blood_pressure || '—'}</div>
+             </div>
+             <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
+                <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>SPO2</div>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: (patient.spo2 && patient.spo2 < 95) ? 'var(--red)' : 'inherit' }}>
+                  {patient.spo2 ? `${patient.spo2}%` : '—'}
+                </div>
+             </div>
+          </div>
+
+          {/* Info card */}
+          <div className="card">
+            <div className="card-header">
+              <h3 className="text-mono" style={{ fontSize: '14px' }}>Patient Information</h3>
+            </div>
+            <div className="card-body">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div>
+                  <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <User size={12} style={{ display: 'inline', marginRight: '4px' }} /> Gender / Age
+                  </div>
+                  <div style={{ fontWeight: 500, textTransform: 'capitalize' }}>
+                    {patient.gender} {patient.age ? `· ${patient.age} yrs` : ''}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    Date of Birth
+                  </div>
+                  <div style={{ fontWeight: 500 }}>
+                    {patient.date_of_birth ? new Date(patient.date_of_birth).toLocaleDateString() : '—'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <Phone size={12} style={{ display: 'inline', marginRight: '4px' }} /> Phone
+                  </div>
+                  <div style={{ fontWeight: 500 }}>{patient.phone_no || '—'}</div>
+                </div>
+                <div>
+                  <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <Activity size={12} style={{ display: 'inline', marginRight: '4px' }} /> Blood Type
+                  </div>
+                  <div style={{ fontWeight: 500 }}>
+                    {patient.blood_type ? <span className="badge badge-open">{patient.blood_type}</span> : '—'}
+                  </div>
+                </div>
+                <div style={{ gridColumn: '1 / -1' }}>
+                  <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <MapPin size={12} style={{ display: 'inline', marginRight: '4px' }} /> Address
+                  </div>
+                  <div style={{ fontWeight: 500 }}>{patient.address || '—'}</div>
+                </div>
+                {patient.medical_history && (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      <FileText size={12} style={{ display: 'inline', marginRight: '4px' }} /> Medical History
+                    </div>
+                    <div style={{ fontSize: '14px', color: 'var(--ink)', whiteSpace: 'pre-wrap' }}>{patient.medical_history}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Edit form */}
+          <PatientEditForm patient={patient} />
+        </div>
+
+        {/* RIGHT: Transaction history */}
+        <div className="card">
+          <div className="card-header">
+            <h3 className="text-mono" style={{ fontSize: '14px' }}>Transaction History</h3>
+            <span className="text-muted text-mono" style={{ fontSize: '12px' }}>{transactions?.length ?? 0}</span>
+          </div>
+          <div style={{ padding: 0 }}>
+            {transactions && transactions.length > 0 ? (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Invoice</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((tx) => (
+                    <tr key={tx.id}>
+                      <td>
+                        <Link href={`/pos/transaction/${tx.id}`} className="text-mono" style={{ color: 'var(--accent)', fontWeight: 500 }}>
+                          {tx.invoice_no}
+                        </Link>
+                        <div className="text-muted" style={{ fontSize: '11px' }}>
+                          {new Date(tx.created_at).toLocaleDateString()}
+                        </div>
+                      </td>
+                      <td><span className={`badge badge-${tx.status}`}>{tx.status}</span></td>
+                      <td className="text-mono">${Number(tx.total_amount).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="empty-state">
+                <div className="empty-state-sub">No transactions yet</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

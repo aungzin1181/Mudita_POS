@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mudita Clinic POS System
 
-## Getting Started
+A high-performance, aesthetically pleasing Point of Sale and Medical Management System built with Next.js 15+, Supabase, and Vanilla CSS.
 
-First, run the development server:
+## 🏥 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 📊 Dashboard
+- Real-time revenue tracking (Today's Revenue).
+- Patient and Transaction statistics.
+- Low-stock alerts for the pharmacy inventory.
+- Quick action shortcuts for common workflows.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 💳 Point of Sale (POS)
+- **Advanced Patient Search**: Real-time lookup by name, phone, or ID.
+- **Dynamic Item Entry**: Add items from Services (Consultations, Procedures) or Inventory (Medications).
+- **Transaction States**: Draft, Open, Paid, and Voided.
+- **Payment Methods**: Support for Cash, KPay, QR/eWallet, and Cards.
+- **Discount System**: Apply direct discounts with reason tracking.
+- **Receipt Printing**: Thermal-printer optimized receipt format (80mm/320px).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 👥 Patient & Doctor Management
+- **Patient Registry**: Comprehensive medical records with blood type, BP, and history tracking.
+- **Doctor Directory**: Manage clinic staff, specializations, and consultation fees.
+- **Transaction History**: Track all billing history per patient.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 📦 Inventory & Services
+- **Pharmacy Tracking**: Batch numbers, expiry dates, and low-stock thresholds.
+- **Quick Adjustments**: One-click stock increments/decrements.
+- **Service Catalog**: Manage consultation fees and procedure costs centrally.
 
-## Learn More
+### 📈 Reports & Analytics
+- Revenue analytics with daily bar charts.
+- Top-billed items and services ranking.
+- Payment method distribution and status breakdown.
 
-To learn more about Next.js, take a look at the following resources:
+## 🛠 Technology Stack
+- **Framework**: Next.js 15 (App Router)
+- **Database**: Supabase (PostgreSQL)
+- **Auth & Security**: Supabase Auth + Row Level Security (RLS)
+- **Styling**: Vanilla CSS (Premium Aesthetic with Sora & Fraunces fonts)
+- **Icons**: Lucide React
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚀 Setup & Installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Local Development
+1. **Clone the repository**
+2. **Environment Variables**: Copy `.env.example` to `.env.local` and fill in your Supabase credentials:
+   ```bash
+   cp .env.example .env.local
+   ```
+3. **Install Dependencies**: `npm install`
+4. **Run Locally**: `npm run dev`
 
-## Deploy on Vercel
+### Production / CI/CD (GitHub)
+If you are deploying via GitHub Actions or Vercel, **do not commit your `.env.local` file**. Instead:
+1. Go to your GitHub Repository **Settings** > **Secrets and Variables** > **Actions**.
+2. Add the following **Repository Secrets**:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+3. If using Vercel, add these under **Project Settings** > **Environment Variables**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎨 Design System
+The system uses a custom "Blueprint" design system:
+- **Surface**: Pure White & Soft Cream (`#f5f2ec`)
+- **Accent**: Deep Navy (`#1a4f8a`)
+- **Typography**: Sora (UI), Fraunces (Headings), DM Mono (Data).
+- **Interactions**: Subtle hover states, smooth transitions, and glassmorphism elements.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Built for excellence in medical administration.*
