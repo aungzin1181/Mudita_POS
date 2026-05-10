@@ -21,6 +21,7 @@ export async function createDoctor(data: DoctorFormData) {
   
   // NOTE: Auth check relaxed for development to fix "Unauthenticated" blocking issue.
   const { data: { user } } = await supabase.auth.getUser()
+  void user // unused but ensures session is refreshed
   
   const { data: doctor, error } = await supabase
     .from('doctors')

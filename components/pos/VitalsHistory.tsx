@@ -7,11 +7,13 @@ import { Activity, Plus, History, Loader2, Thermometer, Heart, Weight, X } from 
 
 export default function VitalsHistory({ patientId, history }: { patientId: string, history: PatientVital[] }) {
   const [showAdd, setShowAdd] = useState(false)
+  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
+    setError('')
     const formData = new FormData(e.currentTarget)
     
     try {
@@ -26,7 +28,8 @@ export default function VitalsHistory({ patientId, history }: { patientId: strin
       })
       setShowAdd(false)
     } catch (err: any) {
-      alert(err.message)
+      console.error('Vitals recording error:', err)
+      setError(err.message || 'Failed to record vitals. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -50,6 +53,7 @@ export default function VitalsHistory({ patientId, history }: { patientId: strin
                <span className="text-mono" style={{ fontWeight: 600 }}>New Vitals Entry</span>
                <button className="btn btn-sm btn-ghost" onClick={() => setShowAdd(false)}><X size={14} /></button>
             </div>
+            {error && <div className="alert alert-red mb-4" style={{ fontSize: '12px', padding: '8px 12px' }}>{error}</div>}
             <form onSubmit={handleSubmit}>
               <div className="form-grid-3">
                 <div className="form-group">

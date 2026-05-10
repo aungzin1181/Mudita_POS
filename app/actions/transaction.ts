@@ -14,7 +14,7 @@ export async function updateTransactionItem(
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const userId = user?.id || '00000000-0000-0000-0000-000000000000' // Fallback for dev
+  const userId = user?.id ?? null
 
   const { data: tx } = await supabase
     .from('transactions')
@@ -83,10 +83,10 @@ export async function applyDiscount(
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const userId = user?.id || '00000000-0000-0000-0000-000000000000'
+  const userId = user?.id ?? null
 
   const { data: profile } = await supabase
-    .from('profiles').select('role').eq('id', userId).single()
+    .from('profiles').select('role').eq('id', userId ?? '').single()
 
   const canApplyDirectly = !user || ['admin', 'manager'].includes(profile?.role || '')
 
@@ -137,7 +137,7 @@ export async function markAsPaid(
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const userId = user?.id || '00000000-0000-0000-0000-000000000000'
+  const userId = user?.id ?? null
 
   const { data: tx } = await supabase
     .from('transactions')
@@ -181,10 +181,10 @@ export async function voidTransaction(
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const userId = user?.id || '00000000-0000-0000-0000-000000000000'
+  const userId = user?.id ?? null
 
   const { data: profile } = await supabase
-    .from('profiles').select('role').eq('id', userId).single()
+    .from('profiles').select('role').eq('id', userId ?? '').single()
 
   if (user && !['admin', 'manager'].includes(profile?.role || '')) {
     throw new Error('Insufficient permissions to void')
@@ -237,7 +237,7 @@ export async function voidTransaction(
 export async function createTransaction(patientId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const userId = user?.id || '00000000-0000-0000-0000-000000000000'
+  const userId = user?.id ?? null
 
   const invoiceNo = `INV-${Date.now().toString().slice(-8)}`
 
@@ -283,7 +283,7 @@ export async function addTransactionItem(
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const userId = user?.id || '00000000-0000-0000-0000-000000000000'
+  const userId = user?.id ?? null
 
   const { data: tx } = await supabase
     .from('transactions')
@@ -343,7 +343,7 @@ export async function addTransactionItem(
 export async function setTransactionDoctor(transactionId: string, doctorId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const userId = user?.id || '00000000-0000-0000-0000-000000000000'
+  const userId = user?.id ?? null
 
   // Update transaction
   const { data: doctor } = await supabase.from('doctors').select('*').eq('id', doctorId).single()

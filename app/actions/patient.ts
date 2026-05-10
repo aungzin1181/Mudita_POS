@@ -35,7 +35,8 @@ export async function createPatient(data: PatientFormData) {
   
   // NOTE: Auth check relaxed for development to fix "Unauthenticated" blocking issue.
   const { data: { user } } = await supabase.auth.getUser()
-  
+  void user // unused but ensures session is refreshed
+
   const { data: patient, error } = await supabase
     .from('patients')
     .insert({
@@ -101,7 +102,12 @@ export async function updatePatient(id: string, data: PatientFormData) {
 export async function recordVitals(data: VitalsFormData) {
   const supabase = await createClient()
 
-  const { data: record, error } = await supabase
+  // NOTE: Auth check relaxed for development to fix "Unauthenticated" blocking issue.
+  const { data: { user } } = await supabase.auth.getUser()
+  void user // unused but ensures session is refreshed
+
+  // 1. Insert into historical tracking table
+  const { data: record, error: insertError } = await supabase
     .from('patient_vitals')
     .insert({
       patient_id: data.patient_id,
@@ -115,7 +121,27 @@ export async function recordVitals(data: VitalsFormData) {
     .select()
     .single()
 
-  if (error) throw error
+  if (insertError) {
+    console.error('Error inserting vitals:', insertError)
+    throw insertError
+  }
+
+  // 2. Sync latest vitals back to the patient record for quick access/summary
+  // We only sync BP, Weight, and SPO2 as those columns currently exist on the patients table
+  const { error: updateError } = await supabase
+    .from('patients')
+    .update({
+      blood_pressure: data.blood_pressure || null,
+      weight: data.weight || null,
+      spo2: data.spo2 || null,
+    })
+    .eq('id', data.patient_id)
+
+  if (updateError) {
+    console.error('Error syncing vitals to patient:', updateError)
+    // We don't throw here to ensure the record creation is considered a success
+    // even if sync fails, but we log it.
+  }
 
   revalidatePath(`/patients/${data.patient_id}`)
   return record

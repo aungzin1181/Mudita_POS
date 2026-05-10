@@ -24,6 +24,7 @@ export async function createProduct(data: ProductFormData) {
   
   // NOTE: Auth check relaxed for development.
   const { data: { user } } = await supabase.auth.getUser()
+  void user // unused but ensures session is refreshed
 
   const { data: product, error } = await supabase
     .from('products')
