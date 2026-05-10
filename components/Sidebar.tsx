@@ -18,7 +18,6 @@ const navItems = [
   { href: '/patients', label: 'Patients', icon: Users },
   { href: '/doctors', label: 'Doctors', icon: Stethoscope },
   { href: '/inventory', label: 'Inventory', icon: Package },
-  { href: '/services', label: 'Services', icon: Settings },
   { href: '/reports', label: 'Reports', icon: BarChart3 },
 ]
 
