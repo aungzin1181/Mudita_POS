@@ -59,7 +59,7 @@ export default async function ReportsPage({
   const avgTicket = paid.length > 0 ? totalRevenue / paid.length : 0
 
   const cashRev = paid.filter((t) => t.payment_method === 'cash').reduce((s, t) => s + Number(t.total_amount), 0)
-  const qrRev = paid.filter((t) => t.payment_method === 'qr_ewallet').reduce((s, t) => s + Number(t.total_amount), 0)
+  const kpayRev = paid.filter((t) => t.payment_method === 'kpay').reduce((s, t) => s + Number(t.total_amount), 0)
 
   // Build daily buckets for last 14 days
   const dailyMap: Record<string, number> = {}
@@ -114,17 +114,17 @@ export default async function ReportsPage({
       <div className="stat-grid" style={{ marginBottom: '24px' }}>
         <div className="stat-card stat-card-accent">
           <div className="stat-label">Total Revenue</div>
-          <div className="stat-value">${totalRevenue.toFixed(2)}</div>
+          <div className="stat-value">{totalRevenue.toLocaleString()} MMK</div>
           <div className="stat-sub">{paid.length} paid transactions</div>
         </div>
         <div className="stat-card stat-card-green">
           <div className="stat-label">Avg. Ticket</div>
-          <div className="stat-value">${avgTicket.toFixed(2)}</div>
+          <div className="stat-value">{avgTicket.toLocaleString()} MMK</div>
           <div className="stat-sub">Per paid transaction</div>
         </div>
         <div className="stat-card stat-card-amber">
           <div className="stat-label">Total Discounts</div>
-          <div className="stat-value">${totalDiscount.toFixed(2)}</div>
+          <div className="stat-value">{totalDiscount.toLocaleString()} MMK</div>
           <div className="stat-sub">{paid.length > 0 ? ((totalDiscount / (totalRevenue + totalDiscount)) * 100).toFixed(1) : '0'}% of gross</div>
         </div>
         <div className="stat-card stat-card-red">
@@ -146,7 +146,7 @@ export default async function ReportsPage({
                 {dailyEntries.map(([label, value]) => (
                   <div
                     key={label}
-                    title={`${label}: $${value.toFixed(2)}`}
+                    title={`${label}: ${value.toLocaleString()} MMK`}
                     style={{
                       flex: 1,
                       display: 'flex',
@@ -194,13 +194,13 @@ export default async function ReportsPage({
             <div className="card-body" style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
               {[
                 { label: 'Cash', value: cashRev, color: 'var(--green)' },
-                { label: 'QR / eWallet', value: qrRev, color: 'var(--accent)' },
+                { label: 'KPay', value: kpayRev, color: 'var(--accent)' },
               ].map(({ label, value, color }) => {
                 const pct = totalRevenue > 0 ? ((value / totalRevenue) * 100).toFixed(1) : '0'
                 return (
                   <div key={label} style={{ flex: 1 }}>
                     <div className="text-mono text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', marginBottom: '6px' }}>{label}</div>
-                    <div style={{ fontFamily: 'var(--serif)', fontSize: '26px', fontWeight: 800, color }}>${value.toFixed(2)}</div>
+                    <div style={{ fontFamily: 'var(--serif)', fontSize: '26px', fontWeight: 800, color }}>{value.toLocaleString()} MMK</div>
                     <div style={{ marginTop: '8px', height: '6px', background: 'var(--surface-alt)', borderRadius: '4px', overflow: 'hidden' }}>
                       <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '4px' }} />
                     </div>
@@ -239,9 +239,9 @@ export default async function ReportsPage({
                         {t.payment_method || '—'}
                       </td>
                       <td className="text-mono" style={{ color: 'var(--red)', fontSize: '13px' }}>
-                        {Number(t.discount_amount) > 0 ? `-$${Number(t.discount_amount).toFixed(2)}` : '—'}
+                        {Number(t.discount_amount) > 0 ? `-${Number(t.discount_amount).toLocaleString()} MMK` : '—'}
                       </td>
-                      <td className="text-mono" style={{ fontWeight: 500 }}>${Number(t.total_amount).toFixed(2)}</td>
+                      <td className="text-mono" style={{ fontWeight: 500 }}>{Number(t.total_amount).toLocaleString()} MMK</td>
                     </tr>
                   ))}
                   {(!txData || txData.length === 0) && (
@@ -282,7 +282,7 @@ export default async function ReportsPage({
                           </div>
                         </td>
                         <td className="text-mono" style={{ fontWeight: 500, color: 'var(--accent)' }}>
-                          ${Number(item.line_total).toFixed(2)}
+                          {Number(item.line_total).toLocaleString()} MMK
                         </td>
                       </tr>
                     ))}

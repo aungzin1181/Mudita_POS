@@ -50,7 +50,7 @@ export default async function POSPage() {
                       {tx.status}
                     </span>
                   </td>
-                  <td className="text-mono">${tx.total_amount.toFixed(2)}</td>
+                  <td className="text-mono">{tx.total_amount.toLocaleString()} MMK</td>
                   <td>
                     <Link href={`/pos/transaction/${tx.id}`} className="btn" style={{ padding: '4px 12px', fontSize: '13px' }}>
                       <Receipt size={14} />

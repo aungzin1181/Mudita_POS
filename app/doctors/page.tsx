@@ -68,7 +68,7 @@ export default async function DoctorsPage({
                     <td style={{ fontWeight: 500 }}>{d.full_name}</td>
                     <td className="text-muted">{d.specialization || '—'}</td>
                     <td className="text-mono">{d.license_no || '—'}</td>
-                    <td className="text-mono">${Number(d.consultation_fee).toFixed(2)}</td>
+                    <td className="text-mono">{Number(d.consultation_fee).toLocaleString()} MMK</td>
                     <td>
                       <span className={`badge badge-${d.is_active ? 'active' : 'inactive'}`}>
                         {d.is_active ? 'Active' : 'Inactive'}

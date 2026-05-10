@@ -98,8 +98,8 @@ export default async function PrintTransactionPage({ params }: { params: Promise
             <div key={item.id} className="receipt-item-row">
               <div className="receipt-item-desc">{item.description}</div>
               <div className="receipt-item-details">
-                <span>{item.quantity} x ${Number(item.unit_price).toFixed(2)}</span>
-                <span>${Number(item.line_total).toFixed(2)}</span>
+                <span>{item.quantity} x {Number(item.unit_price).toLocaleString()} MMK</span>
+                <span>{Number(item.line_total).toLocaleString()} MMK</span>
               </div>
             </div>
           ))}
@@ -109,28 +109,28 @@ export default async function PrintTransactionPage({ params }: { params: Promise
 
         <div className="receipt-row">
           <span>Subtotal:</span>
-          <span>${Number(tx.subtotal).toFixed(2)}</span>
+          <span>{Number(tx.subtotal).toLocaleString()} MMK</span>
         </div>
         <div className="receipt-row">
           <span>Discount:</span>
-          <span>-${Number(tx.discount_amount).toFixed(2)}</span>
+          <span>-{Number(tx.discount_amount).toLocaleString()} MMK</span>
         </div>
 
         <div className="receipt-total-row">
           <span>TOTAL:</span>
-          <span>${Number(tx.total_amount).toFixed(2)}</span>
+          <span>{Number(tx.total_amount).toLocaleString()} MMK</span>
         </div>
 
         {tx.amount_paid && (
           <div className="receipt-row">
             <span>Received:</span>
-            <span>${Number(tx.amount_paid).toFixed(2)}</span>
+            <span>{Number(tx.amount_paid).toLocaleString()} MMK</span>
           </div>
         )}
         {tx.change_amount !== null && (
           <div className="receipt-row">
             <span>Change:</span>
-            <span>${Number(tx.change_amount).toFixed(2)}</span>
+            <span>{Number(tx.change_amount).toLocaleString()} MMK</span>
           </div>
         )}
 

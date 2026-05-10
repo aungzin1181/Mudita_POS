@@ -115,7 +115,7 @@ export default function ItemList({ transactionId, items, isEditable, services, p
                 >
                   <div className="tile-icon service"><Stethoscope size={20} /></div>
                   <div className="tile-name">{s.name}</div>
-                  <div className="tile-price">${s.default_price.toFixed(2)}</div>
+                  <div className="tile-price">{s.default_price.toLocaleString()} MMK</div>
                   {loading === s.id && <div className="tile-loader"><Loader2 size={16} className="animate-spin" /></div>}
                 </button>
               ))}
@@ -131,7 +131,7 @@ export default function ItemList({ transactionId, items, isEditable, services, p
                   <div className="tile-icon product"><Package size={20} /></div>
                   <div className="tile-name">{p.name}</div>
                   <div className="tile-stock">Stock: {p.stock_qty}</div>
-                  <div className="tile-price">${p.unit_price.toFixed(2)}</div>
+                  <div className="tile-price">{p.unit_price.toLocaleString()} MMK</div>
                   {loading === p.id && <div className="tile-loader"><Loader2 size={16} className="animate-spin" /></div>}
                   {p.stock_qty <= 0 && <div className="tile-badge-out">Out of Stock</div>}
                 </button>
@@ -186,9 +186,9 @@ export default function ItemList({ transactionId, items, isEditable, services, p
                       )}
                     </div>
                   </td>
-                  <td className="text-mono" style={{ textAlign: 'right' }}>${Number(item.unit_price).toFixed(2)}</td>
+                  <td className="text-mono" style={{ textAlign: 'right' }}>{Number(item.unit_price).toLocaleString()} MMK</td>
                   <td className="text-mono" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent)' }}>
-                    ${Number(item.line_total).toFixed(2)}
+                    {Number(item.line_total).toLocaleString()} MMK
                   </td>
                   {isEditable && (
                     <td style={{ textAlign: 'right' }}>

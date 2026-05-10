@@ -60,7 +60,7 @@ export default async function DashboardPage() {
       <div className="stat-grid">
         <div className="stat-card stat-card-accent">
           <div className="stat-label">Today&apos;s Revenue</div>
-          <div className="stat-value">${todayRevenue.toFixed(2)}</div>
+          <div className="stat-value">{todayRevenue.toLocaleString()} MMK</div>
           <div className="stat-sub">Paid transactions today</div>
         </div>
         <div className="stat-card stat-card-green">
@@ -110,7 +110,7 @@ export default async function DashboardPage() {
                     <td>
                       <span className={`badge badge-${tx.status}`}>{tx.status}</span>
                     </td>
-                    <td className="text-mono">${Number(tx.total_amount).toFixed(2)}</td>
+                    <td className="text-mono">{Number(tx.total_amount).toLocaleString()} MMK</td>
                     <td>
                       <Link href={`/pos/transaction/${tx.id}`} className="btn btn-sm">
                         <Receipt size={13} /> View

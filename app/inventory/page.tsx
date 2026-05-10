@@ -59,7 +59,7 @@ export default async function InventoryPage({
         </div>
         <div className="stat-card stat-card-green">
           <div className="stat-label">Stock Value</div>
-          <div className="stat-value">${totalValue.toFixed(0)}</div>
+          <div className="stat-value">{totalValue.toLocaleString()} MMK</div>
           <div className="stat-sub">At selling price</div>
         </div>
         <div className={`stat-card ${lowCount > 0 ? 'stat-card-red' : 'stat-card-green'}`}>
@@ -136,7 +136,7 @@ export default async function InventoryPage({
                           </span>
                         )}
                       </td>
-                      <td className="text-mono">${Number(p.unit_price).toFixed(2)}</td>
+                      <td className="text-mono">{Number(p.unit_price).toLocaleString()} MMK</td>
                       <td>
                         <span className={`badge badge-${isLow ? 'low' : 'ok'}`}>{p.stock_qty} {p.unit || 'unit'}</span>
                       </td>

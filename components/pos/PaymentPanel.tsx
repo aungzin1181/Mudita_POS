@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Transaction } from '@/types/pos'
 import { markAsPaid, voidTransaction, applyDiscount } from '@/app/actions/transaction'
-import { CheckCircle, XCircle, Tag, Wallet, Banknote, CreditCard, Smartphone, Loader2, Printer } from 'lucide-react'
+import { CheckCircle, XCircle, Tag, Banknote, Smartphone, Loader2, Printer } from 'lucide-react'
 
 export default function PaymentPanel({ transaction }: { transaction: Transaction }) {
   const [loading, setLoading] = useState(false)
@@ -11,20 +11,20 @@ export default function PaymentPanel({ transaction }: { transaction: Transaction
   const [discountAmount, setDiscountAmount] = useState('')
   const [discountReason, setDiscountReason] = useState('')
 
-  const handlePay = async (method: 'cash' | 'qr_ewallet' | 'kpay' | 'card') => {
-    const amount = prompt(`Enter amount paid (${method}):`, transaction.total_amount.toString())
+  const handlePay = async (method: 'cash' | 'kpay') => {
+    const amount = prompt(`Enter amount paid (${method.toUpperCase()}) in MMK:`, transaction.total_amount.toString())
     if (!amount) return
-    
+
     let refNo = undefined
-    if (method === 'kpay' || method === 'qr_ewallet') {
-      refNo = prompt('Enter Transaction Reference / Auth Code:') || undefined
+    if (method === 'kpay') {
+      refNo = prompt('Enter KPay Transaction Reference / Auth Code:') || undefined
     }
 
     setLoading(true)
     try {
       const res = await markAsPaid(transaction.id, parseFloat(amount), method, refNo)
       if (res.success) {
-        alert(`Payment successful! Change: $${res.change.toFixed(2)}`)
+        alert(`Payment successful! Change: ${res.change.toLocaleString()} MMK`)
       }
     } catch (err: any) {
       alert(err.message)
@@ -83,11 +83,11 @@ export default function PaymentPanel({ transaction }: { transaction: Transaction
         <div className="card-body">
           <div className="flex justify-between mb-2">
             <span className="text-muted">Subtotal</span>
-            <span className="text-mono">${transaction.subtotal.toFixed(2)}</span>
+            <span className="text-mono">{Number(transaction.subtotal).toLocaleString()} MMK</span>
           </div>
           <div className="flex justify-between mb-2">
             <span className="text-muted">Discount</span>
-            <span className="text-mono" style={{ color: 'var(--red)' }}>-${transaction.discount_amount.toFixed(2)}</span>
+            <span className="text-mono" style={{ color: 'var(--red)' }}>-{Number(transaction.discount_amount).toLocaleString()} MMK</span>
           </div>
           {transaction.discount_reason && (
             <div className="text-mono text-muted mb-4" style={{ fontSize: '11px', fontStyle: 'italic' }}>
@@ -98,7 +98,7 @@ export default function PaymentPanel({ transaction }: { transaction: Transaction
           <div className="flex justify-between items-center">
             <span style={{ fontWeight: 600 }}>Total Amount</span>
             <span className="text-serif" style={{ fontSize: '24px', fontWeight: 800, color: 'var(--accent)' }}>
-              ${transaction.total_amount.toFixed(2)}
+              {Number(transaction.total_amount).toLocaleString()} MMK
             </span>
           </div>
 
@@ -108,7 +108,7 @@ export default function PaymentPanel({ transaction }: { transaction: Transaction
                 <CheckCircle size={16} /> Paid in Full
               </div>
               <div className="text-mono text-muted mt-1" style={{ fontSize: '11px' }}>
-                via {transaction.payment_method} · Change: ${transaction.change_amount?.toFixed(2)}
+                via {transaction.payment_method?.toUpperCase()} · Change: {Number(transaction.change_amount ?? 0).toLocaleString()} MMK
               </div>
             </div>
           )}
@@ -154,12 +154,6 @@ export default function PaymentPanel({ transaction }: { transaction: Transaction
               </button>
               <button className="btn btn-primary justify-center" onClick={() => handlePay('kpay')} disabled={loading || transaction.total_amount <= 0}>
                 <Smartphone size={18} /> KPay
-              </button>
-              <button className="btn btn-primary justify-center" onClick={() => handlePay('qr_ewallet')} disabled={loading || transaction.total_amount <= 0}>
-                <Wallet size={18} /> QR
-              </button>
-              <button className="btn btn-primary justify-center" onClick={() => handlePay('card')} disabled={loading || transaction.total_amount <= 0}>
-                <CreditCard size={18} /> Card
               </button>
             </div>
           </div>

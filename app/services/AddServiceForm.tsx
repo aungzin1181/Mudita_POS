@@ -56,7 +56,7 @@ export default function AddServiceForm() {
             </select>
           </div>
           <div className="form-group">
-            <label className="form-label">Default Price ($)</label>
+            <label className="form-label">Default Price (MMK)</label>
             <input
               name="default_price"
               type="number"

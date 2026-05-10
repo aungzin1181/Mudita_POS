@@ -167,7 +167,7 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
                         </div>
                       </td>
                       <td><span className={`badge badge-${tx.status}`}>{tx.status}</span></td>
-                      <td className="text-mono">${Number(tx.total_amount).toFixed(2)}</td>
+                      <td className="text-mono">{Number(tx.total_amount).toLocaleString()} MMK</td>
                     </tr>
                   ))}
                 </tbody>

@@ -78,7 +78,7 @@ export default function ServiceRow({ service }: { service: Service }) {
   return (
     <tr>
       <td style={{ fontWeight: 500 }}>{service.name}</td>
-      <td className="text-mono">${service.default_price.toFixed(2)}</td>
+      <td className="text-mono">{service.default_price.toLocaleString()} MMK</td>
       <td>
         <span className={`badge badge-${service.is_active ? 'active' : 'inactive'}`}>
           {service.is_active ? 'Active' : 'Inactive'}
