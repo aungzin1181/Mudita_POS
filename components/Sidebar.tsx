@@ -35,8 +35,8 @@ export default function Sidebar() {
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">🏥</div>
         <div>
-          <div className="sidebar-logo-title">Clinic POS</div>
-          <div className="sidebar-logo-sub">Medical System</div>
+          <div className="sidebar-logo-title">Muditar Clinic</div>
+          <div className="sidebar-logo-sub">POS System</div>
         </div>
       </div>
 
