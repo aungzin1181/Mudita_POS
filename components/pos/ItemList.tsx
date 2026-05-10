@@ -87,7 +87,6 @@ export default function ItemList({ transactionId, items, isEditable, services, p
               <div className="flex gap-2">
                  <button className={`btn btn-sm ${category === 'all' ? 'btn-primary' : ''}`} onClick={() => setCategory('all')}>All</button>
                  <button className={`btn btn-sm ${category === 'medication' ? 'btn-primary' : ''}`} onClick={() => setCategory('medication')}>Meds</button>
-                 <button className={`btn btn-sm ${category === 'service' ? 'btn-primary' : ''}`} onClick={() => setCategory('service')}>Services</button>
               </div>
             </div>
             <div className="search-box w-full">
@@ -96,7 +95,7 @@ export default function ItemList({ transactionId, items, isEditable, services, p
                 type="text" 
                 className="form-input" 
                 style={{ paddingLeft: '38px' }} 
-                placeholder="Search products or services..." 
+                placeholder="Search products..." 
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
               />
@@ -105,20 +104,7 @@ export default function ItemList({ transactionId, items, isEditable, services, p
           <div className="card-body" style={{ maxHeight: '400px', overflowY: 'auto', padding: '16px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
               
-              {/* Services */}
-              {(category === 'all' || category === 'service') && filteredServices.map(s => (
-                <button 
-                  key={s.id} 
-                  className="product-tile"
-                  onClick={() => handleAddItem('service', s.id)}
-                  disabled={!!loading}
-                >
-                  <div className="tile-icon service"><Stethoscope size={20} /></div>
-                  <div className="tile-name">{s.name}</div>
-                  <div className="tile-price">{s.default_price.toLocaleString()} MMK</div>
-                  {loading === s.id && <div className="tile-loader"><Loader2 size={16} className="animate-spin" /></div>}
-                </button>
-              ))}
+
 
               {/* Products */}
               {(category === 'all' || category === 'medication') && filteredProducts.map(p => (
