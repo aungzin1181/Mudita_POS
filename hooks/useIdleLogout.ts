@@ -9,8 +9,8 @@ const WARN_BEFORE  = 2  * 60 * 1000   // warn 2 mins before logout
 
 export function useIdleLogout() {
   const router      = useRouter()
-  const timerRef    = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const warnRef     = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const timerRef    = useRef<number | undefined>(undefined)
+  const warnRef     = useRef<number | undefined>(undefined)
   const supabase    = createClient()
 
   const logout = useCallback(async () => {
@@ -23,12 +23,11 @@ export function useIdleLogout() {
     clearTimeout(warnRef.current)
 
     // Show warning 2 mins before logout
-    warnRef.current = setTimeout(() => {
-      // Dispatch custom event — UI can show a toast warning
+    warnRef.current = window.setTimeout(() => {
       window.dispatchEvent(new CustomEvent('idle-warning'))
     }, IDLE_TIMEOUT - WARN_BEFORE)
 
-    timerRef.current = setTimeout(logout, IDLE_TIMEOUT)
+    timerRef.current = window.setTimeout(logout, IDLE_TIMEOUT)
   }, [logout])
 
   useEffect(() => {
