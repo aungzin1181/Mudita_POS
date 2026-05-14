@@ -160,8 +160,13 @@ export default function AppointmentView({ initialAppointments, date, doctors }: 
           <div>
             {appointments.map(appt => (
               <div key={appt.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 20px', borderBottom: '1px solid var(--border)' }}>
-                <div style={{ fontFamily: 'var(--mono)', fontSize: '14px', fontWeight: 600, color: 'var(--accent-dark)', minWidth: '50px' }}>
-                  {appt.appointment_time.substring(0, 5)}
+                <div style={{ fontFamily: 'var(--mono)', minWidth: '72px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--ink-muted)', marginBottom: '2px' }}>
+                    {new Date(appt.appointment_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--accent)' }}>
+                    {appt.appointment_time.substring(0, 5)}
+                  </div>
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '14px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
