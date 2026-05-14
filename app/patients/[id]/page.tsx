@@ -13,7 +13,8 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
   const [
     { data: patient }, 
     { data: transactions },
-    { data: vitals }
+    { data: vitals },
+    { data: appointments }
   ] = await Promise.all([
     supabase.from('patients').select('*').eq('id', id).single(),
     supabase
@@ -26,7 +27,17 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
       .from('patient_vitals')
       .select('*')
       .eq('patient_id', id)
-      .order('recorded_at', { ascending: false })
+      .order('recorded_at', { ascending: false }),
+    supabase
+      .from('appointments')
+      .select(`
+        appointment_date, appointment_time, status, reason,
+        doctors ( full_name ),
+        transactions ( id, invoice_no, total_amount, payment_method )
+      `)
+      .eq('patient_id', id)
+      .order('appointment_date', { ascending: false })
+      .limit(10)
   ])
 
   if (!patient) notFound()
@@ -139,8 +150,64 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
           <PatientEditForm patient={patient} />
         </div>
 
-        {/* RIGHT: Transaction history */}
-        <div className="card">
+        {/* RIGHT: Transaction history & Appointment history */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          <div className="card">
+            <div className="card-header">
+              <h3 className="text-mono" style={{ fontSize: '14px' }}>Appointment History</h3>
+              <span className="text-muted text-mono" style={{ fontSize: '12px' }}>{appointments?.length ?? 0}</span>
+            </div>
+            <div style={{ padding: 0 }}>
+              {appointments && appointments.length > 0 ? (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Reason / Doctor</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {appointments.map((appt: any, i: number) => (
+                      <tr key={i}>
+                        <td>
+                          <div style={{ fontWeight: 500 }}>{new Date(appt.appointment_date).toLocaleDateString()}</div>
+                          <div className="text-muted text-mono" style={{ fontSize: '11px' }}>{appt.appointment_time.substring(0, 5)}</div>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '13px' }}>{appt.reason || '—'}</div>
+                          <div className="text-muted" style={{ fontSize: '11px' }}>
+                            {appt.doctors ? `Dr. ${appt.doctors.full_name}` : ''}
+                            {appt.transactions && (
+                              <Link href={`/pos/transaction/${appt.transactions.id}`} style={{ marginLeft: '6px', color: 'var(--accent)' }}>
+                                ({appt.transactions.invoice_no})
+                              </Link>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`badge`} style={{ 
+                            background: appt.status === 'visited' ? 'var(--green-soft)' : appt.status === 'pending' ? 'var(--amber-soft)' : 'var(--red-soft)',
+                            color: appt.status === 'visited' ? 'var(--green)' : appt.status === 'pending' ? 'var(--amber)' : 'var(--red)',
+                            border: '1px solid currentColor'
+                          }}>
+                            {appt.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-state-sub">No appointments yet</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="card">
           <div className="card-header">
             <h3 className="text-mono" style={{ fontSize: '14px' }}>Transaction History</h3>
             <span className="text-muted text-mono" style={{ fontSize: '12px' }}>{transactions?.length ?? 0}</span>
@@ -181,5 +248,6 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
     </div>
+  </div>
   )
 }

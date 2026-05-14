@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createTransaction } from '@/app/actions/transaction'
+import { linkAppointmentToTransaction } from '@/app/actions/appointment'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { UserPlus, ArrowLeft, Loader2, Search, CheckCircle, Users } from 'lucide-react'
 import Link from 'next/link'
@@ -14,6 +15,7 @@ export default function NewTransactionForm() {
 
   const prefillId = searchParams.get('patient_id') || ''
   const prefillName = searchParams.get('patient_name') || ''
+  const fromAppt = searchParams.get('from_appt') || ''
 
   const [query, setQuery] = useState(prefillName)
   const [results, setResults] = useState<Patient[]>([])
@@ -49,6 +51,9 @@ export default function NewTransactionForm() {
     setLoading(true)
     try {
       const tx = await createTransaction(selectedPatient.id)
+      if (fromAppt) {
+        await linkAppointmentToTransaction(fromAppt, tx.id)
+      }
       router.push(`/pos/transaction/${tx.id}`)
     } catch (err) {
       console.error(err)

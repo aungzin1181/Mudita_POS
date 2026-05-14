@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import {
   Users, ShoppingCart, Package,
-  TrendingUp, AlertTriangle, Receipt, Plus,
+  TrendingUp, AlertTriangle, Receipt, Plus, Calendar
 } from 'lucide-react';
 
 export default async function DashboardPage() {
@@ -14,6 +14,7 @@ export default async function DashboardPage() {
     { data: recentTx },
     { data: paidToday },
     { data: allActiveProducts },
+    { count: pendingApptCount },
   ] = await Promise.all([
     supabase.from('patients').select('*', { count: 'exact', head: true }),
     supabase.from('transactions').select('*', { count: 'exact', head: true }),
@@ -31,6 +32,11 @@ export default async function DashboardPage() {
       .from('products')
       .select('id, name, stock_qty, low_stock_threshold')
       .eq('is_active', true),
+    supabase
+      .from('appointments')
+      .select('*', { count: 'exact', head: true })
+      .eq('appointment_date', new Date().toLocaleDateString('en-CA'))
+      .eq('status', 'pending'),
   ]);
 
   const todayRevenue = paidToday?.reduce((sum, t) => sum + Number(t.total_amount), 0) ?? 0;
@@ -62,6 +68,11 @@ export default async function DashboardPage() {
           <div className="stat-label">Today&apos;s Revenue</div>
           <div className="stat-value">{todayRevenue.toLocaleString()} MMK</div>
           <div className="stat-sub">Paid transactions today</div>
+        </div>
+        <div className="stat-card stat-card-blue" style={{ borderLeftColor: 'var(--accent)', background: 'var(--accent-soft)' }}>
+          <div className="stat-label">Today&apos;s Appointments</div>
+          <div className="stat-value">{pendingApptCount ?? 0}</div>
+          <div className="stat-sub">Pending in queue</div>
         </div>
         <div className="stat-card stat-card-green">
           <div className="stat-label">Total Patients</div>
@@ -138,6 +149,10 @@ export default async function DashboardPage() {
               <h3 className="text-mono" style={{ fontSize: '14px' }}>Quick Actions</h3>
             </div>
             <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Link href="/appointments" className="btn" style={{ justifyContent: 'flex-start' }}>
+                <Calendar size={16} /> Appointments Queue
+                {(pendingApptCount ?? 0) > 0 && <span className="badge badge-amber" style={{ marginLeft: 'auto', padding: '2px 6px', fontSize: '10px' }}>{pendingApptCount} pending</span>}
+              </Link>
               <Link href="/pos/new" className="btn" style={{ justifyContent: 'flex-start' }}>
                 <ShoppingCart size={16} /> New Transaction
               </Link>

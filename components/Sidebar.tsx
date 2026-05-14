@@ -10,10 +10,12 @@ import {
   BarChart3,
   Stethoscope,
   Settings,
+  Calendar,
 } from 'lucide-react'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/appointments', label: 'Appointments', icon: Calendar },
   { href: '/pos', label: 'POS', icon: ShoppingCart },
   { href: '/patients', label: 'Patients', icon: Users },
   { href: '/doctors', label: 'Doctors', icon: Stethoscope },

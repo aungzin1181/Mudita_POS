@@ -126,3 +126,32 @@ export interface Product {
   unit?: string;
   updated_at?: string;
 }
+
+export type AppointmentStatus = 'pending' | 'visited' | 'no_show' | 'cancelled';
+
+export interface Appointment {
+  id: string;
+  patient_id: string;
+  doctor_id?: string | null;
+  appointment_date: string;
+  appointment_time: string;
+  status: AppointmentStatus;
+  reason?: string | null;
+  notes?: string | null;
+  transaction_id?: string | null;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+  visited_at?: string | null;
+  
+  // Relations
+  patients?: {
+    patient_no: string;
+    full_name: string;
+    phone_no?: string | null;
+  };
+  doctors?: {
+    full_name: string;
+    specialization?: string | null;
+  };
+}
