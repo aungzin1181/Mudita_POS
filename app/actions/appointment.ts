@@ -22,7 +22,7 @@ export async function createAppointment(formData: FormData) {
     throw new Error(data?.error || error?.message)
   }
 
-  revalidatePath('/appointments')
+  revalidatePath('/', 'layout')
   return data
 }
 

@@ -23,5 +23,7 @@ export default async function AppointmentsPage() {
     .select('id, full_name, specialization')
     .eq('is_active', true)
     
+  console.log("TODAY:", today, "APPTS:", todayAppts)
+    
   return <AppointmentView initialAppointments={(todayAppts as any) || []} date={today} doctors={allDoctors || []} />
 }
