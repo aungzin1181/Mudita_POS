@@ -6,6 +6,9 @@ import PatientEditForm from './PatientEditForm'
 import VitalsHistory from '@/components/pos/VitalsHistory'
 import { PatientVital } from '@/types/pos'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function PatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   const { id } = await params

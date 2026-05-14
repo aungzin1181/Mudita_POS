@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import AppointmentView from './AppointmentView'
 import { Appointment } from '@/types/pos'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function AppointmentsPage() {
   const supabase = await createClient()
   
@@ -15,8 +18,9 @@ export default async function AppointmentsPage() {
       patients ( patient_no, full_name, phone_no ),
       doctors  ( full_name, specialization )
     `)
-    .eq('appointment_date', today)
+    .order('appointment_date', { ascending: false })
     .order('appointment_time', { ascending: true })
+    .limit(50)
 
   const { data: allDoctors } = await supabase
     .from('doctors')
