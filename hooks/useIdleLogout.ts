@@ -9,8 +9,8 @@ const WARN_BEFORE  = 2  * 60 * 1000   // warn 2 mins before logout
 
 export function useIdleLogout() {
   const router      = useRouter()
-  const timerRef    = useRef<NodeJS.Timeout>()
-  const warnRef     = useRef<NodeJS.Timeout>()
+  const timerRef    = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const warnRef     = useRef<ReturnType<typeof setTimeout> | null>(null)
   const supabase    = createClient()
 
   const logout = useCallback(async () => {
