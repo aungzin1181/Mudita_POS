@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import LogoutButton from './LogoutButton'
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -72,12 +73,8 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <form action="/api/auth/logout" method="POST" style={{ marginBottom: '12px' }}>
-          <button type="submit" className="sidebar-nav-item" style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', padding: '10px 16px', borderRadius: '8px', color: '#dc2626', fontWeight: 600 }}>
-            <span>Logout</span>
-          </button>
-        </form>
-        <div className="sidebar-footer-text">Medical Clinic POS v1.0</div>
+        <LogoutButton />
+        <div className="sidebar-footer-text" style={{ marginTop: 12 }}>Medical Clinic POS v1.0</div>
       </div>
     </aside>
   )
