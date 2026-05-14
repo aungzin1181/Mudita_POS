@@ -40,24 +40,14 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <div style={{
-            width: 280, height: 280,
-            margin: '0 auto 28px',
-            borderRadius: 24,
-            background: '#fffdf8',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 20,
-            boxShadow: '0 24px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06)',
-          }}>
-            <Image
+          <Image
               src="/logo.png"
               alt="မုဒိတာဆေးခန်း Logo"
-              width={220}
-              height={220}
-              style={{ objectFit: 'contain' }}
+              width={260}
+              height={260}
+              style={{ objectFit: 'contain', marginBottom: 28, filter: 'drop-shadow(0 8px 32px rgba(0,0,0,0.4))' }}
               priority
             />
-          </div>
 
           <h1 style={{
             fontFamily: "'Fraunces', serif",

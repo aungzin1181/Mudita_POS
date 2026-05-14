@@ -40,20 +40,13 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div style={{
-          width: 40, height: 40, borderRadius: 8,
-          background: '#ffffff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          overflow: 'hidden', flexShrink: 0,
-        }}>
-          <Image
-            src="/logo.png"
-            alt="မုဒိတာဆေးခန်း"
-            width={38}
-            height={38}
-            style={{ objectFit: 'contain' }}
-          />
-        </div>
+        <Image
+          src="/logo.png"
+          alt="မုဒိတာဆေးခန်း"
+          width={44}
+          height={44}
+          style={{ objectFit: 'contain', flexShrink: 0 }}
+        />
         <div>
           <div className="sidebar-logo-title">မုဒိတာဆေးခန်း</div>
           <div className="sidebar-logo-sub">POS System</div>
