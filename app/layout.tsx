@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
+import SidebarWrapper from "@/components/SidebarWrapper";
+import { IdleProvider } from "./IdleProvider";
 
 export const metadata: Metadata = {
   title: "Medical Clinic POS",
@@ -22,7 +23,8 @@ export default function RootLayout({
       </head>
       <body>
         <div className="app-layout">
-          <Sidebar />
+          <SidebarWrapper />
+          <IdleProvider />
           <main className="main-content">
             {children}
           </main>
