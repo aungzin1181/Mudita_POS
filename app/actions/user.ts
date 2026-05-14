@@ -36,7 +36,7 @@ export async function createStaffUser(formData: FormData) {
   })
 
   revalidatePath('/settings/users')
-  return { success: true, userId: newUser.user.id }
+  // Return void — errors are thrown, success is handled via revalidatePath
 }
 
 // Deactivate user (soft delete)
