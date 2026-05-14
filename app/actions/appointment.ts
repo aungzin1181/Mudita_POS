@@ -3,27 +3,51 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function createAppointment(formData: FormData) {
-  const supabase = await createClient()
+type AppointmentResult = { success: boolean; error?: string; appointment_id?: string }
 
-  // NOTE: Auth check relaxed for development to fix "Unauthenticated" blocking issue.
-  const { data: { user } } = await supabase.auth.getUser()
-  void user // unused but ensures session is refreshed
-
-  const { data, error } = await supabase.rpc('create_appointment', {
-    p_patient_id:       formData.get('patient_id') as string,
-    p_doctor_id:        formData.get('doctor_id') ? (formData.get('doctor_id') as string) : null,
-    p_appointment_date: formData.get('date') as string,
-    p_appointment_time: formData.get('time') as string,
-    p_reason:           formData.get('reason') as string,
-  })
-
-  if (error || !data?.success) {
-    throw new Error(data?.error || error?.message)
+function friendlyAppointmentError(raw: string): string {
+  const msg = raw.toLowerCase()
+  if (msg.includes('patient already has appointment')) {
+    return 'This patient already has an appointment on that day. Please choose a different date.'
   }
+  if (msg.includes('doctor already has appointment')) {
+    return 'That doctor is already booked at the same time. Please pick a different time slot.'
+  }
+  if (msg.includes('not found')) {
+    return 'Appointment not found. It may have been deleted.'
+  }
+  if (msg.includes('visited')) {
+    return 'This appointment has already been marked as visited.'
+  }
+  return raw
+}
 
-  revalidatePath('/', 'layout')
-  return data
+export async function createAppointment(formData: FormData): Promise<AppointmentResult> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    void user
+
+    const { data, error } = await supabase.rpc('create_appointment', {
+      p_patient_id:       formData.get('patient_id') as string,
+      p_doctor_id:        formData.get('doctor_id') ? (formData.get('doctor_id') as string) : null,
+      p_appointment_date: formData.get('date') as string,
+      p_appointment_time: formData.get('time') as string,
+      p_reason:           formData.get('reason') as string,
+    })
+
+    if (error) {
+      return { success: false, error: friendlyAppointmentError(error.message) }
+    }
+    if (!data?.success) {
+      return { success: false, error: friendlyAppointmentError(data?.error ?? 'Unknown error') }
+    }
+
+    revalidatePath('/', 'layout')
+    return { success: true, appointment_id: data.appointment_id }
+  } catch (e: any) {
+    return { success: false, error: friendlyAppointmentError(e.message ?? 'Something went wrong') }
+  }
 }
 
 export async function markVisitedAndOpenPOS(appointmentId: string) {

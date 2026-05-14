@@ -292,19 +292,19 @@ function AppointmentForm({ doctors, onClose, onSuccess }: { doctors: Doctor[], o
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (!patientId) { setError('Please select a patient first.'); return }
     setLoading(true)
     setError('')
     const formData = new FormData(e.currentTarget)
     formData.append('patient_id', patientId)
-    
-    try {
-      if (!patientId) throw new Error('Please select a patient')
-      await createAppointment(formData)
+
+    const result = await createAppointment(formData)
+    setLoading(false)
+
+    if (!result.success) {
+      setError(result.error ?? 'Failed to create appointment.')
+    } else {
       onSuccess()
-    } catch (err: any) {
-      setError(err.message || 'Error creating appointment')
-    } finally {
-      setLoading(false)
     }
   }
 
