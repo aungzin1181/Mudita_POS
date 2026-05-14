@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import UserManagementClient from './UserManagementClient'
 
-export const dynamic = 'force-dynamic'
+export const dynamic  = 'force-dynamic'
 export const revalidate = 0
 
 export default async function UsersSettingsPage() {
@@ -13,10 +14,23 @@ export default async function UsersSettingsPage() {
     redirect('/403')
   }
 
-  const { data: profiles } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const [{ data: profiles }, { data: attempts }] = await Promise.all([
+    supabaseAdmin
+      .from('user_profiles')
+      .select('*')
+      .order('created_at', { ascending: false }),
+    supabaseAdmin
+      .from('login_attempts')
+      .select('*')
+      .order('attempted_at', { ascending: false })
+      .limit(50),
+  ])
 
-  return <UserManagementClient profiles={profiles || []} />
+  return (
+    <UserManagementClient
+      profiles={profiles || []}
+      loginAttempts={attempts || []}
+      currentUserId={user.id}
+    />
+  )
 }

@@ -9,18 +9,22 @@ import {
   Package,
   BarChart3,
   Stethoscope,
-  Settings,
   Calendar,
+  UserCog,
 } from 'lucide-react'
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/appointments', label: 'Appointments', icon: Calendar },
-  { href: '/pos', label: 'POS', icon: ShoppingCart },
-  { href: '/patients', label: 'Patients', icon: Users },
-  { href: '/doctors', label: 'Doctors', icon: Stethoscope },
-  { href: '/inventory', label: 'Inventory', icon: Package },
-  { href: '/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/dashboard',       label: 'Dashboard',    icon: LayoutDashboard },
+  { href: '/appointments',    label: 'Appointments', icon: Calendar },
+  { href: '/pos',             label: 'POS',          icon: ShoppingCart },
+  { href: '/patients',        label: 'Patients',     icon: Users },
+  { href: '/doctors',         label: 'Doctors',      icon: Stethoscope },
+  { href: '/inventory',       label: 'Inventory',    icon: Package },
+  { href: '/reports',         label: 'Reports',      icon: BarChart3 },
+]
+
+const adminItems = [
+  { href: '/settings/users',  label: 'User Admin',   icon: UserCog },
 ]
 
 export default function Sidebar() {
@@ -44,6 +48,18 @@ export default function Sidebar() {
       <nav className="sidebar-nav">
         <div className="sidebar-section-label">Navigation</div>
         {navItems.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className={`sidebar-nav-item${isActive(href) ? ' active' : ''}`}
+          >
+            <Icon size={18} />
+            <span>{label}</span>
+          </Link>
+        ))}
+
+        <div className="sidebar-section-label" style={{ marginTop: 16 }}>Settings</div>
+        {adminItems.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
