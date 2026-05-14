@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import LogoutButton from './LogoutButton'
 import {
@@ -39,7 +40,21 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">🏥</div>
+        <div style={{
+          width: 38, height: 38, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.08)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden', flexShrink: 0,
+          border: '1px solid rgba(255,255,255,0.15)',
+        }}>
+          <Image
+            src="/logo.png"
+            alt="မုဒိတာဆေးခန်း"
+            width={34}
+            height={34}
+            style={{ objectFit: 'contain' }}
+          />
+        </div>
         <div>
           <div className="sidebar-logo-title">မုဒိတာဆေးခန်း</div>
           <div className="sidebar-logo-sub">POS System</div>

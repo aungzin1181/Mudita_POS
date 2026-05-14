@@ -1,9 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { loginWithPassword } from '@/app/actions/auth'
 import { useActionState } from 'react'
 
-export default function LoginPage({ searchParams }: { searchParams: Promise<{ reason?: string }> }) {
+export default function LoginPage() {
   const [state, formAction, pending] = useActionState(
     async (_prev: any, formData: FormData) => {
       return await loginWithPassword(formData)
@@ -12,55 +13,249 @@ export default function LoginPage({ searchParams }: { searchParams: Promise<{ re
   )
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f4f8' }}>
-      <div style={{ background: '#1e293b', borderRadius: '12px', padding: '32px', maxWidth: '380px', width: '100%', color: 'white' }}>
-        <div style={{ textAlign: 'center', fontSize: '28px', marginBottom: '12px' }}>🏥</div>
-        <div style={{ fontSize: '18px', fontWeight: 'bold', textAlign: 'center', marginBottom: '4px' }}>မုဒိတာဆေးခန်း</div>
-        <div style={{ color: '#64748b', fontSize: '12px', textAlign: 'center', marginBottom: '24px' }}>
-          Enter your credentials to continue
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+
+      {/* ── LEFT PANEL: Logo / Brand ── */}
+      <div style={{
+        flex: '0 0 55%',
+        background: 'linear-gradient(145deg, #0f1923 0%, #1a2e4a 60%, #0e3060 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative circles */}
+        <div style={{
+          position: 'absolute', width: 500, height: 500,
+          borderRadius: '50%', border: '1px solid rgba(255,255,255,0.04)',
+          top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+        }} />
+        <div style={{
+          position: 'absolute', width: 700, height: 700,
+          borderRadius: '50%', border: '1px solid rgba(255,255,255,0.03)',
+          top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+        }} />
+
+        {/* Logo */}
+        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+          <div style={{
+            width: 280, height: 280,
+            margin: '0 auto 28px',
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.06)',
+            backdropFilter: 'blur(8px)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 24,
+            boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
+          }}>
+            <Image
+              src="/logo.png"
+              alt="မုဒိတာဆေးခန်း Logo"
+              width={220}
+              height={220}
+              style={{ objectFit: 'contain' }}
+              priority
+            />
+          </div>
+
+          <h1 style={{
+            fontFamily: "'Fraunces', serif",
+            fontSize: 32,
+            fontWeight: 800,
+            color: '#ffffff',
+            margin: '0 0 8px',
+            letterSpacing: '-0.02em',
+          }}>
+            မုဒိတာဆေးခန်း
+          </h1>
+          <p style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: 12,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'rgba(255,255,255,0.35)',
+            margin: 0,
+          }}>
+            Medical Clinic · POS System
+          </p>
+
+          {/* Divider dots */}
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 32 }}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{
+                width: i === 1 ? 24 : 6, height: 6,
+                borderRadius: 3,
+                background: i === 1 ? '#1a4f8a' : 'rgba(255,255,255,0.2)',
+                transition: 'all 0.3s',
+              }} />
+            ))}
+          </div>
         </div>
+      </div>
 
-        {state?.error && (
-          <div style={{ background: '#fef2f2', color: '#991b1b', padding: '10px 14px', borderRadius: '6px', marginBottom: '16px', fontSize: '13px' }}>
-            {state.error}
+      {/* ── RIGHT PANEL: Login Form ── */}
+      <div style={{
+        flex: 1,
+        background: '#f5f2ec',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '48px 40px',
+      }}>
+        <div style={{ width: '100%', maxWidth: 380 }}>
+          <div style={{ marginBottom: 36 }}>
+            <p style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: 11,
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              color: '#5a6272',
+              marginBottom: 8,
+            }}>
+              Welcome back
+            </p>
+            <h2 style={{
+              fontFamily: "'Fraunces', serif",
+              fontSize: 28,
+              fontWeight: 700,
+              color: '#0f1923',
+              margin: 0,
+              lineHeight: 1.2,
+            }}>
+              Sign in to continue
+            </h2>
           </div>
-        )}
 
-        <form action={formAction}>
-          <div style={{ marginBottom: '14px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '5px', display: 'block' }}>
-              Email Address
-            </label>
-            <input
-              name="email"
-              type="email"
-              required
-              style={{ width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '9px 12px', color: '#e2e8f0', fontSize: '13px', boxSizing: 'border-box' }}
-            />
-          </div>
-          <div style={{ marginBottom: '14px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '5px', display: 'block' }}>
-              Password
-            </label>
-            <input
-              name="password"
-              type="password"
-              required
-              style={{ width: '100%', background: '#0f172a', border: '1px solid #334155', borderRadius: '6px', padding: '9px 12px', color: '#e2e8f0', fontSize: '13px', boxSizing: 'border-box' }}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={pending}
-            style={{ width: '100%', background: pending ? '#5b21b6' : '#7c3aed', color: 'white', border: 'none', borderRadius: '7px', padding: '11px', fontSize: '14px', fontWeight: 'bold', cursor: pending ? 'not-allowed' : 'pointer', marginTop: '6px', transition: 'background 0.2s' }}
-          >
-            {pending ? 'Signing in...' : 'Sign In →'}
-          </button>
-        </form>
+          {state?.error && (
+            <div style={{
+              background: '#fde8e8',
+              border: '1px solid #7b1e1e',
+              color: '#7b1e1e',
+              padding: '11px 14px',
+              borderRadius: 8,
+              marginBottom: 20,
+              fontSize: 13,
+              display: 'flex',
+              gap: 8,
+              alignItems: 'center',
+            }}>
+              <span>⚠</span>
+              <span>{state.error}</span>
+            </div>
+          )}
 
-        <p style={{ textAlign: 'center', fontSize: '11px', color: '#475569', marginTop: '14px' }}>
-          No self-registration. Contact admin for access.
-        </p>
+          <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+            <div>
+              <label style={{
+                display: 'block',
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 11,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: '#5a6272',
+                marginBottom: 6,
+              }}>
+                Email Address
+              </label>
+              <input
+                name="email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="you@mudita.clinic"
+                style={{
+                  width: '100%',
+                  padding: '11px 14px',
+                  border: '1px solid #ddd8ce',
+                  borderRadius: 8,
+                  background: '#ffffff',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 14,
+                  color: '#0f1923',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.15s',
+                }}
+                onFocus={e => e.target.style.borderColor = '#1a4f8a'}
+                onBlur={e => e.target.style.borderColor = '#ddd8ce'}
+              />
+            </div>
+
+            <div>
+              <label style={{
+                display: 'block',
+                fontFamily: "'DM Mono', monospace",
+                fontSize: 11,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: '#5a6272',
+                marginBottom: 6,
+              }}>
+                Password
+              </label>
+              <input
+                name="password"
+                type="password"
+                required
+                autoComplete="current-password"
+                placeholder="••••••••"
+                style={{
+                  width: '100%',
+                  padding: '11px 14px',
+                  border: '1px solid #ddd8ce',
+                  borderRadius: 8,
+                  background: '#ffffff',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: 14,
+                  color: '#0f1923',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                  transition: 'border-color 0.15s',
+                }}
+                onFocus={e => e.target.style.borderColor = '#1a4f8a'}
+                onBlur={e => e.target.style.borderColor = '#ddd8ce'}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={pending}
+              style={{
+                width: '100%',
+                padding: '13px',
+                background: pending ? '#5a6272' : '#1a4f8a',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: pending ? 'not-allowed' : 'pointer',
+                marginTop: 4,
+                transition: 'background 0.2s',
+                letterSpacing: '0.02em',
+              }}
+            >
+              {pending ? 'Signing in…' : 'Sign In →'}
+            </button>
+          </form>
+
+          <p style={{
+            textAlign: 'center',
+            fontFamily: "'DM Mono', monospace",
+            fontSize: 11,
+            color: '#5a6272',
+            marginTop: 28,
+            lineHeight: 1.6,
+          }}>
+            No self-registration.
+            <br />Contact your admin for access.
+          </p>
+        </div>
       </div>
     </div>
   )
