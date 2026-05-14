@@ -44,6 +44,8 @@ export interface PatientVital {
   temperature: number | null;
   pulse_rate: number | null;
   notes: string | null;
+  diagnosis: string | null;
+  treatments: string | null;
   recorded_at: string;
 }
 

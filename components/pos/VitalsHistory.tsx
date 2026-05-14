@@ -25,6 +25,8 @@ export default function VitalsHistory({ patientId, history }: { patientId: strin
         temperature: parseFloat(formData.get('temperature') as string) || undefined,
         pulse_rate: parseInt(formData.get('pulse_rate') as string) || undefined,
         notes: formData.get('notes') as string,
+        diagnosis: formData.get('diagnosis') as string,
+        treatments: formData.get('treatments') as string,
       })
       setShowAdd(false)
     } catch (err: any) {
@@ -77,9 +79,17 @@ export default function VitalsHistory({ patientId, history }: { patientId: strin
                   <input name="pulse_rate" type="number" className="form-input" placeholder="72" />
                 </div>
               </div>
-              <div className="form-group">
+              <div className="form-group" style={{ marginTop: '12px' }}>
+                <label className="form-label">Diagnosis</label>
+                <textarea name="diagnosis" className="form-input" placeholder="Clinical diagnosis..." rows={2} style={{ resize: 'vertical' }}></textarea>
+              </div>
+              <div className="form-group" style={{ marginTop: '12px' }}>
+                <label className="form-label">Treatments</label>
+                <textarea name="treatments" className="form-input" placeholder="Prescribed treatments or medications..." rows={2} style={{ resize: 'vertical' }}></textarea>
+              </div>
+              <div className="form-group" style={{ marginTop: '12px', marginBottom: '16px' }}>
                 <label className="form-label">Notes</label>
-                <input name="notes" type="text" className="form-input" placeholder="Any clinical notes..." />
+                <input name="notes" type="text" className="form-input" placeholder="Any other clinical notes..." />
               </div>
               <button type="submit" className="btn btn-primary w-full justify-center" disabled={loading}>
                 {loading ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
@@ -124,9 +134,19 @@ export default function VitalsHistory({ patientId, history }: { patientId: strin
                       <span className="vitals-val">{record.pulse_rate ? `${record.pulse_rate}bpm` : '—'}</span>
                     </div>
                   </div>
+                  {record.diagnosis && (
+                    <div className="vitals-note" style={{ borderLeftColor: 'var(--amber)' }}>
+                      <strong>Diagnosis:</strong> {record.diagnosis}
+                    </div>
+                  )}
+                  {record.treatments && (
+                    <div className="vitals-note" style={{ borderLeftColor: 'var(--green)' }}>
+                      <strong>Treatments:</strong> {record.treatments}
+                    </div>
+                  )}
                   {record.notes && (
                     <div className="vitals-note">
-                      {record.notes}
+                      <strong>Notes:</strong> {record.notes}
                     </div>
                   )}
                 </div>

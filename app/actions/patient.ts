@@ -25,6 +25,8 @@ export interface VitalsFormData {
   temperature?: number
   pulse_rate?: number
   notes?: string
+  diagnosis?: string
+  treatments?: string
 }
 
 /**
@@ -117,6 +119,8 @@ export async function recordVitals(data: VitalsFormData) {
       temperature: data.temperature || null,
       pulse_rate: data.pulse_rate || null,
       notes: data.notes || null,
+      diagnosis: data.diagnosis || null,
+      treatments: data.treatments || null,
     })
     .select()
     .single()
