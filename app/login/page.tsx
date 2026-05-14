@@ -43,13 +43,11 @@ export default function LoginPage() {
           <div style={{
             width: 280, height: 280,
             margin: '0 auto 28px',
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 24,
+            background: '#fffdf8',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 24,
-            boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
+            padding: 20,
+            boxShadow: '0 24px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06)',
           }}>
             <Image
               src="/logo.png"

@@ -41,17 +41,16 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-logo">
         <div style={{
-          width: 38, height: 38, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.08)',
+          width: 40, height: 40, borderRadius: 8,
+          background: '#ffffff',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden', flexShrink: 0,
-          border: '1px solid rgba(255,255,255,0.15)',
         }}>
           <Image
             src="/logo.png"
             alt="မုဒိတာဆေးခန်း"
-            width={34}
-            height={34}
+            width={38}
+            height={38}
             style={{ objectFit: 'contain' }}
           />
         </div>
