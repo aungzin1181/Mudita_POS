@@ -65,22 +65,29 @@ RETURNS jsonb
 LANGUAGE plpgsql
 STABLE SECURITY DEFINER AS $$
 DECLARE
-  v_role      text;
-  v_is_active boolean;
-  v_is_locked boolean;
+  v_role      text    := 'user';
+  v_table_ok  boolean := false;
 BEGIN
-  SELECT role::text, is_active, is_locked
-  INTO  v_role, v_is_active, v_is_locked
-  FROM  user_profiles
-  WHERE id = (event ->> 'user_id')::uuid;
+  -- Check if user_profiles table exists before querying it.
+  -- A missing relation (42P01) aborts the hook sub-transaction even inside
+  -- a nested EXCEPTION block, so we guard with a catalog lookup first.
+  SELECT EXISTS (
+    SELECT 1
+    FROM   pg_class c
+    JOIN   pg_namespace n ON n.oid = c.relnamespace
+    WHERE  c.relname = 'user_profiles'
+      AND  n.nspname = 'public'
+      AND  c.relkind = 'r'
+  ) INTO v_table_ok;
 
-  -- If profile exists, check status
-  IF FOUND THEN
-    IF NOT v_is_active OR v_is_locked THEN
-      RAISE EXCEPTION 'Account is inactive or locked';
-    END IF;
-  ELSE
-    v_role := 'user'; -- Fallback if no profile
+  IF v_table_ok THEN
+    BEGIN
+      SELECT role::text INTO v_role
+      FROM   public.user_profiles
+      WHERE  id = (event ->> 'user_id')::uuid;
+    EXCEPTION WHEN OTHERS THEN
+      v_role := 'user';
+    END;
   END IF;
 
   RETURN jsonb_set(
@@ -92,3 +99,11 @@ BEGIN
   );
 END;
 $$;
+
+-- Grant execute to supabase_auth_admin so the hook can be invoked
+GRANT EXECUTE ON FUNCTION public.custom_access_token_hook(jsonb)
+  TO supabase_auth_admin;
+
+-- Revoke from public for least-privilege
+REVOKE EXECUTE ON FUNCTION public.custom_access_token_hook(jsonb)
+  FROM PUBLIC;

@@ -1,8 +1,12 @@
--- Step 1: Enum type
-CREATE TYPE appointment_status AS ENUM ('pending', 'visited', 'no_show', 'cancelled');
+-- Step 1: Enum type (idempotent)
+DO $$ BEGIN
+  CREATE TYPE appointment_status AS ENUM ('pending', 'visited', 'no_show', 'cancelled');
+EXCEPTION
+  WHEN duplicate_object THEN null;
+END $$;
 
 -- Step 2: Table
-CREATE TABLE appointments (
+CREATE TABLE IF NOT EXISTS appointments (
   id                uuid                   PRIMARY KEY DEFAULT gen_random_uuid(),
   patient_id        uuid                   NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
   doctor_id         uuid                   REFERENCES doctors(id) ON DELETE SET NULL,
@@ -21,32 +25,43 @@ CREATE TABLE appointments (
 -- Step 3: updated_at auto-trigger
 CREATE EXTENSION IF NOT EXISTS moddatetime SCHEMA extensions;
 
-CREATE TRIGGER trg_appointments_updated_at
-  BEFORE UPDATE ON appointments
-  FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgname = 'trg_appointments_updated_at'
+      AND tgrelid = 'appointments'::regclass
+  ) THEN
+    CREATE TRIGGER trg_appointments_updated_at
+      BEFORE UPDATE ON appointments
+      FOR EACH ROW EXECUTE FUNCTION extensions.moddatetime(updated_at);
+  END IF;
+END $$;
 
 -- Step 4: Indexes
-CREATE INDEX idx_appt_date ON appointments (appointment_date);
-CREATE INDEX idx_appt_patient ON appointments (patient_id, appointment_date DESC);
-CREATE INDEX idx_appt_doctor_date ON appointments (doctor_id, appointment_date);
+CREATE INDEX IF NOT EXISTS idx_appt_date ON appointments (appointment_date);
+CREATE INDEX IF NOT EXISTS idx_appt_patient ON appointments (patient_id, appointment_date DESC);
+CREATE INDEX IF NOT EXISTS idx_appt_doctor_date ON appointments (doctor_id, appointment_date);
 
 -- Step 5: RLS
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
 
 -- ① All authenticated users: view appointments
+DROP POLICY IF EXISTS "all_view_appointments" ON appointments;
 CREATE POLICY "all_view_appointments" ON appointments
   FOR SELECT USING (auth.role() = 'authenticated');
 
 -- ② Cashier + Doctor/Nurse + Admin: create appointment
--- (Simplified for demo, usually we check user role)
+DROP POLICY IF EXISTS "staff_create_appointment" ON appointments;
 CREATE POLICY "staff_create_appointment" ON appointments
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- ③ Update appointment
+DROP POLICY IF EXISTS "staff_update_appointment" ON appointments;
 CREATE POLICY "staff_update_appointment" ON appointments
   FOR UPDATE USING (auth.role() = 'authenticated');
 
 -- Delete appointment
+DROP POLICY IF EXISTS "staff_delete_appointment" ON appointments;
 CREATE POLICY "staff_delete_appointment" ON appointments
   FOR DELETE USING (auth.role() = 'authenticated');
 

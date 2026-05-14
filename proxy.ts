@@ -49,7 +49,13 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user) {
-    const role: string = user.app_metadata?.user_role ?? ''
+    // The custom_access_token_hook injects user_role into JWT claims,
+    // which surfaces as user_metadata on the server session.
+    // Fall back to app_metadata for users provisioned via the admin API.
+    const role: string =
+      user.user_metadata?.user_role ??
+      user.app_metadata?.user_role ??
+      ''
 
     // 2. Role-based route check
     const matchedRoute = Object.keys(ROUTE_ROLES)
