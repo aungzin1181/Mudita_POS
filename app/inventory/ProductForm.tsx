@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createProduct, updateProduct, ProductFormData } from '@/app/actions/inventory'
 import { Product } from '@/types/pos'
 import './product-form.css'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ArrowLeft } from 'lucide-react'
 
 export default function ProductForm({ initialData }: { initialData?: Product }) {
   const router = useRouter()
@@ -76,30 +76,18 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="topbar">
-        <div className="tb-left">
-          <div className="tb-brand">🏥 Clinic POS</div>
-          <div className="tb-sep"></div>
-          <div className="tb-crumb">
-            Inventory <span>›</span> <span>{isEdit ? 'Edit Product' : 'New Product'}</span>
-          </div>
-        </div>
-        <div className="tb-actions">
-          <Link href="/inventory" className="btn-ghost" style={{ textDecoration: 'none' }}>Discard</Link>
-          <button type="submit" className="btn-save" disabled={loading}>
-            {loading ? <Loader2 size={12} className="animate-spin" /> : (
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            )}
-            Save Changes
-          </button>
-        </div>
-      </div>
 
-      <div className="pf-page">
-        <div className="pf-page-title">{isEdit ? 'Edit Product' : 'New Product'}</div>
-        <p className="pf-page-sub">
-          {isEdit ? `SKU: ${initialData.sku} · Last updated ${new Date(initialData.updated_at || Date.now()).toLocaleDateString()}` : 'Fill in product details to add to inventory'}
-        </p>
+
+      <div className="pf-page" style={{ paddingTop: '0' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <Link href="/inventory" className="btn" style={{ border: 'none', background: 'none', paddingLeft: 0, marginBottom: '16px' }}>
+            <ArrowLeft size={16} /> Back to Inventory
+          </Link>
+          <div className="pf-page-title">{isEdit ? 'Edit Product' : 'New Product'}</div>
+          <p className="pf-page-sub" style={{ margin: 0 }}>
+            {isEdit ? `SKU: ${initialData.sku} · Last updated ${new Date(initialData.updated_at || Date.now()).toLocaleDateString()}` : 'Fill in product details to add to inventory'}
+          </p>
+        </div>
 
         {error && <div className="alert alert-red">{error}</div>}
 
@@ -317,6 +305,17 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
                 <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Rx</span><span className="pf-sum-val" style={{ color: 'var(--muted)' }}>{rx ? 'Required' : 'Not required'}</span></div>
                 <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Status</span><span><span className={status ? "pf-dot pf-dot-on" : "pf-dot pf-dot-off"}></span><span style={{ fontSize: '12px', fontWeight: 600, color: status ? 'var(--green)' : 'var(--muted)' }}>{status ? 'Active' : 'Inactive'}</span></span></div>
               </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+              <Link href="/inventory" className="btn" style={{ flex: 1, justifyContent: 'center' }}>Discard</Link>
+              <button type="submit" className="btn btn-primary" style={{ flex: 2, justifyContent: 'center' }} disabled={loading}>
+                {loading ? <Loader2 size={16} className="animate-spin" /> : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '6px' }}><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                )}
+                Save Changes
+              </button>
             </div>
           </div>
         </div>
