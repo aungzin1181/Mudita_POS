@@ -17,10 +17,11 @@ export default async function DashboardPage() {
     { count: pendingApptCount },
   ] = await Promise.all([
     supabase.from('patients').select('*', { count: 'exact', head: true }),
-    supabase.from('transactions').select('*', { count: 'exact', head: true }),
+    supabase.from('transactions').select('*', { count: 'exact', head: true }).neq('status', 'draft'),
     supabase
       .from('transactions')
       .select('id, invoice_no, status, total_amount, created_at')
+      .neq('status', 'draft')
       .order('created_at', { ascending: false })
       .limit(6),
     supabase
@@ -40,7 +41,7 @@ export default async function DashboardPage() {
   ]);
 
   const todayRevenue = paidToday?.reduce((sum, t) => sum + Number(t.total_amount), 0) ?? 0;
-  const openCount = recentTx?.filter((t) => ['draft', 'open'].includes(t.status)).length ?? 0;
+  const openCount = recentTx?.filter((t) => t.status === 'open').length ?? 0;
 
   // Client-side column comparison for low stock (PostgREST can't compare two columns directly)
   const lowStock = allActiveProducts
