@@ -54,19 +54,61 @@ export async function markVisitedAndOpenPOS(appointmentId: string) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  void user
 
-  const { data, error } = await supabase.rpc('update_appointment_status', {
-    p_appointment_id: appointmentId,
-    p_status: 'visited',
-  })
+  // Get the appointment first
+  const { data: appt } = await supabase
+    .from('appointments')
+    .select('patient_id, transaction_id, status')
+    .eq('id', appointmentId)
+    .single()
 
-  if (error || !data?.success) {
-    throw new Error(data?.error || error?.message)
+  if (!appt) throw new Error('Appointment not found')
+
+  let finalTxId = appt.transaction_id
+
+  // Mark as visited using the RPC
+  if (appt.status !== 'visited') {
+    const { data, error } = await supabase.rpc('update_appointment_status', {
+      p_appointment_id: appointmentId,
+      p_status: 'visited',
+    })
+
+    if (error || !data?.success) {
+      throw new Error(data?.error || error?.message)
+    }
+  }
+
+  // If there is no transaction linked, create one
+  if (!finalTxId) {
+    const invoiceNo = `INV-${Date.now().toString().slice(-8)}`
+    
+    // Create new transaction
+    const { data: tx, error: txError } = await supabase
+      .from('transactions')
+      .insert({
+        patient_id: appt.patient_id,
+        created_by: user?.id ?? null,
+        updated_by: user?.id ?? null,
+        invoice_no: invoiceNo,
+        status: 'draft',
+        subtotal: 0,
+        total_amount: 0,
+      })
+      .select('id')
+      .single()
+
+    if (txError) throw txError
+    finalTxId = tx.id
+
+    // Link the transaction to the appointment
+    await supabase
+      .from('appointments')
+      .update({ transaction_id: finalTxId })
+      .eq('id', appointmentId)
   }
 
   revalidatePath('/appointments')
-  return { patientId: data.patient_id }
+  return { transactionId: finalTxId }
 }
 
 export async function updateAppointmentStatus(

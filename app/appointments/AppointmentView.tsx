@@ -67,8 +67,8 @@ export default function AppointmentView({ initialAppointments, date, doctors }: 
     setLoadingApptId(id)
     try {
       if (status === 'visited') {
-        const { patientId } = await markVisitedAndOpenPOS(id)
-        router.push(`/pos/new?patient_id=${patientId}&from_appt=${id}`)
+        const { transactionId } = await markVisitedAndOpenPOS(id)
+        router.push(`/pos/transaction/${transactionId}`)
       } else {
         await updateAppointmentStatus(id, status)
       }
@@ -205,12 +205,13 @@ export default function AppointmentView({ initialAppointments, date, doctors }: 
                   <>
                     <span className="badge badge-green" style={{ width: '70px', textAlign: 'center', display: 'inline-block' }}>Visited</span>
                     <div style={{ marginLeft: '16px' }}>
-                      <Link 
-                        href={`/pos/new?patient_id=${appt.patient_id}&from_appt=${appt.id}`} 
+                      <button 
+                        onClick={() => handleStatusChange(appt.id, 'visited')}
                         className="btn btn-sm btn-primary"
+                        disabled={loadingApptId === appt.id}
                       >
-                        <CreditCard size={12} /> Open POS
-                      </Link>
+                        {loadingApptId === appt.id ? <Loader2 size={12} className="animate-spin" /> : <CreditCard size={12} />} Open POS
+                      </button>
                     </div>
                   </>
                 ) : (
