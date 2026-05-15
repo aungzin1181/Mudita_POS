@@ -139,7 +139,7 @@ export default function PatientEditForm({ patient }: { patient: Patient }) {
                 <input name="blood_pressure" type="text" className="form-input" defaultValue={patient.blood_pressure || ''} />
              </div>
              <div className="form-group">
-                <label className="form-label">Weight (kg)</label>
+                <label className="form-label">Weight (lb)</label>
                 <input name="weight" type="number" step="0.1" className="form-input" defaultValue={patient.weight || ''} />
              </div>
              <div className="form-group">

@@ -63,7 +63,7 @@ export default function VitalsHistory({ patientId, history }: { patientId: strin
                   <input name="blood_pressure" type="text" className="form-input" placeholder="120/80" />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Weight (kg)</label>
+                  <label className="form-label">Weight (lb)</label>
                   <input name="weight" type="number" step="0.1" className="form-input" placeholder="0.0" />
                 </div>
                 <div className="form-group">
@@ -71,8 +71,8 @@ export default function VitalsHistory({ patientId, history }: { patientId: strin
                   <input name="spo2" type="number" className="form-input" placeholder="98" />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Temp (°C)</label>
-                  <input name="temperature" type="number" step="0.1" className="form-input" placeholder="36.5" />
+                  <label className="form-label">Temp (℉)</label>
+                  <input name="temperature" type="number" step="0.1" className="form-input" placeholder="98.6" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Pulse (bpm)</label>
@@ -119,7 +119,7 @@ export default function VitalsHistory({ patientId, history }: { patientId: strin
                     </div>
                     <div className="vitals-stat">
                       <span className="vitals-label">WT</span>
-                      <span className="vitals-val">{record.weight ? `${record.weight}kg` : '—'}</span>
+                      <span className="vitals-val">{record.weight ? `${record.weight}lb` : '—'}</span>
                     </div>
                     <div className="vitals-stat">
                       <span className="vitals-label">SPO2</span>
@@ -127,7 +127,7 @@ export default function VitalsHistory({ patientId, history }: { patientId: strin
                     </div>
                     <div className="vitals-stat">
                       <span className="vitals-label">TEMP</span>
-                      <span className="vitals-val">{record.temperature ? `${record.temperature}°C` : '—'}</span>
+                      <span className="vitals-val">{record.temperature ? `${record.temperature}℉` : '—'}</span>
                     </div>
                     <div className="vitals-stat">
                       <span className="vitals-label">HR</span>
