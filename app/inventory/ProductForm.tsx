@@ -79,14 +79,17 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
 
 
       <div className="pf-page" style={{ paddingTop: '0' }}>
-        <div style={{ marginBottom: '24px' }}>
-          <Link href="/inventory" className="btn" style={{ border: 'none', background: 'none', paddingLeft: 0, marginBottom: '16px' }}>
-            <ArrowLeft size={16} /> Back to Inventory
-          </Link>
-          <div className="pf-page-title">{isEdit ? 'Edit Product' : 'New Product'}</div>
-          <p className="pf-page-sub" style={{ margin: 0 }}>
-            {isEdit ? `SKU: ${initialData.sku} · Last updated ${new Date(initialData.updated_at || Date.now()).toLocaleDateString()}` : 'Fill in product details to add to inventory'}
-          </p>
+        <div className="page-header" style={{ marginBottom: '24px' }}>
+          <div>
+            <Link href="/inventory" className="btn" style={{ border: 'none', background: 'none', paddingLeft: 0, marginBottom: '12px' }}>
+              <ArrowLeft size={16} /> Back to Inventory
+            </Link>
+            <div className="page-eyebrow">Pharmacy · Inventory</div>
+            <h1 className="page-title">{isEdit ? <>Edit <em>Product</em></> : <>Add <em>New Product</em></>}</h1>
+            <p className="pf-page-sub" style={{ margin: 0 }}>
+              {isEdit ? `SKU: ${initialData.sku} · Last updated ${new Date(initialData.updated_at || Date.now()).toLocaleDateString()}` : 'Fill in product details to add to inventory'}
+            </p>
+          </div>
         </div>
 
         {error && <div className="alert alert-red">{error}</div>}
@@ -108,7 +111,7 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
                     <span className="pf-hint">Commercial name shown in POS</span>
                   </div>
                   <div className="pf-field">
-                    <label className="pf-lbl">Generic Name <span className="pf-bdg pf-bdg-new">New</span></label>
+                    <label className="pf-lbl">Generic Name </label>
                     <input name="generic_name" className="pf-inp" type="text" value={generic} onChange={e => setGeneric(e.target.value)} placeholder="e.g. Paracetamol" />
                     <span className="pf-hint">Active ingredient / INN name</span>
                   </div>
@@ -128,14 +131,14 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
                     </select>
                   </div>
                   <div className="pf-field">
-                    <label className="pf-lbl">Dosage / Strength <span className="pf-bdg pf-bdg-new">New</span></label>
+                    <label className="pf-lbl">Dosage / Strength </label>
                     <input name="dosage_strength" className="pf-inp" type="text" value={strength} onChange={e => setStrength(e.target.value)} placeholder="e.g. 500mg" />
                   </div>
                 </div>
 
                 <div className="pf-row pf-r3">
                   <div className="pf-field">
-                    <label className="pf-lbl">Unit Type <span className="pf-req">*</span> <span className="pf-bdg pf-bdg-new">New</span></label>
+                    <label className="pf-lbl">Unit Type <span className="pf-req">*</span> </label>
                     <select name="unit_type" className="pf-sel" value={unitType} onChange={e => setUnitType(e.target.value)}>
                       <option>Tablet</option>
                       <option>Capsule</option>
@@ -150,7 +153,7 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
                     <span className="pf-hint">Dispensing unit</span>
                   </div>
                   <div className="pf-field">
-                    <label className="pf-lbl">Pack Size <span className="pf-bdg pf-bdg-new">New</span></label>
+                    <label className="pf-lbl">Pack Size </label>
                     <div className="pf-ig">
                       <span className="pf-ig-pre">per box</span>
                       <input name="pack_size" className="pf-inp" type="number" defaultValue={initialData?.pack_size || ''} placeholder="100" />
@@ -199,7 +202,7 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
                     <span className="pf-hint">Warn when stock falls below</span>
                   </div>
                   <div className="pf-field">
-                    <label className="pf-lbl">Reorder Level <span className="pf-bdg pf-bdg-new">New</span></label>
+                    <label className="pf-lbl">Reorder Level </label>
                     <input name="reorder_level" className="pf-inp" type="number" defaultValue={initialData?.reorder_level || ''} placeholder="30" />
                     <span className="pf-hint">Suggested restock trigger</span>
                   </div>
@@ -229,11 +232,11 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
                 <div className="pf-sec-lbl">Supplier / Manufacturer</div>
                 <div className="pf-row pf-r2">
                   <div className="pf-field">
-                    <label className="pf-lbl">Supplier Name <span className="pf-bdg pf-bdg-new">New</span></label>
+                    <label className="pf-lbl">Supplier Name </label>
                     <input name="supplier" className="pf-inp" type="text" defaultValue={initialData?.supplier || ''} placeholder="e.g. ABC Pharma Ltd" />
                   </div>
                   <div className="pf-field">
-                    <label className="pf-lbl">Manufacturer <span className="pf-bdg pf-bdg-new">New</span></label>
+                    <label className="pf-lbl">Manufacturer </label>
                     <input name="manufacturer" className="pf-inp" type="text" defaultValue={initialData?.manufacturer || ''} placeholder="e.g. GlaxoSmithKline" />
                   </div>
                 </div>
@@ -248,7 +251,7 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
               </div>
               <div className="pf-card-body">
                 <div className="pf-field">
-                  <label className="pf-lbl">Description / Storage Notes <span className="pf-bdg pf-bdg-new">New</span></label>
+                  <label className="pf-lbl">Description / Storage Notes </label>
                   <textarea name="notes" className="pf-ta" defaultValue={initialData?.notes || ''} placeholder="Store below 30°C. Keep away from moisture..."></textarea>
                   <span className="pf-hint">Displayed as a tooltip in POS when staff hover over this product</span>
                 </div>
@@ -267,14 +270,14 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
               <div className="pf-card-body">
                 <div className="pf-tog-row">
                   <div>
-                    <div className="pf-tog-lbl">Prescription Required <span className="pf-bdg pf-bdg-new">New</span></div>
+                    <div className="pf-tog-lbl">Prescription Required </div>
                     <div className="pf-tog-desc">Doctor order needed to dispense</div>
                   </div>
                   <label className="pf-tog"><input name="prescription_required" type="checkbox" checked={rx} onChange={e => setRx(e.target.checked)} /><span className="pf-tog-sl"></span></label>
                 </div>
                 <div className="pf-tog-row">
                   <div>
-                    <div className="pf-tog-lbl">Controlled Medicine <span className="pf-bdg pf-bdg-new">New</span></div>
+                    <div className="pf-tog-lbl">Controlled Medicine </div>
                     <div className="pf-tog-desc">Special logging per dispense</div>
                   </div>
                   <label className="pf-tog"><input name="is_controlled" type="checkbox" defaultChecked={initialData?.is_controlled} /><span className="pf-tog-sl"></span></label>
