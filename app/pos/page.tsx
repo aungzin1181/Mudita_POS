@@ -6,18 +6,37 @@ import { Plus, Receipt } from 'lucide-react';
 export default async function POSPage({
   searchParams,
 }: {
-  searchParams: Promise<{ date?: string }>
+  searchParams: Promise<{ period?: string; from?: string; to?: string }>
 }) {
-  const { date } = await searchParams;
+  const { period, from, to } = await searchParams;
   const supabase = await createClient();
 
-  // If date is provided, filter by that date. Otherwise, default to today.
-  const targetDate = date ? new Date(date) : new Date();
-  
-  // Get local YYYY-MM-DD
-  const dateStr = targetDate.toLocaleDateString('en-CA'); 
-  const startOfDay = new Date(dateStr + 'T00:00:00').toISOString();
-  const endOfDay = new Date(dateStr + 'T23:59:59.999').toISOString();
+  let startIso: string | null = null;
+  let endIso: string | null = null;
+  let label = 'Recent Transactions';
+
+  if (period === 'today') {
+    label = 'Today';
+    const d = new Date().toLocaleDateString('en-CA');
+    startIso = new Date(d + 'T00:00:00').toISOString();
+    endIso = new Date(d + 'T23:59:59.999').toISOString();
+  } else if (period === 'week') {
+    label = 'This Week';
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay()); // Sunday
+    startIso = new Date(d.toLocaleDateString('en-CA') + 'T00:00:00').toISOString();
+    endIso = new Date(new Date().toLocaleDateString('en-CA') + 'T23:59:59.999').toISOString();
+  } else if (period === 'month') {
+    label = 'This Month';
+    const d = new Date();
+    d.setDate(1);
+    startIso = new Date(d.toLocaleDateString('en-CA') + 'T00:00:00').toISOString();
+    endIso = new Date(new Date().toLocaleDateString('en-CA') + 'T23:59:59.999').toISOString();
+  } else if (from || to) {
+    label = 'Custom Date Range';
+    if (from) startIso = new Date(from + 'T00:00:00').toISOString();
+    if (to) endIso = new Date(to + 'T23:59:59.999').toISOString();
+  }
 
   let query = supabase
     .from('transactions')
@@ -25,9 +44,8 @@ export default async function POSPage({
     .neq('status', 'draft')
     .order('created_at', { ascending: false });
 
-  if (date) {
-    query = query.gte('created_at', startOfDay).lte('created_at', endOfDay);
-  }
+  if (startIso) query = query.gte('created_at', startIso);
+  if (endIso) query = query.lte('created_at', endIso);
 
   const { data: transactions } = await query;
 
@@ -53,19 +71,37 @@ export default async function POSPage({
 
       {/* Filters and Stats */}
       <div className="card" style={{ marginBottom: '24px' }}>
-        <div className="card-body" style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', alignItems: 'center' }}>
-          <form method="GET" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <label className="text-mono text-muted" style={{ fontSize: '11px', textTransform: 'uppercase' }}>Filter Date</label>
+        <div className="card-body" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span className="text-mono text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', marginRight: '8px' }}>Quick Filters:</span>
+            <Link href="/pos?period=today" className={`btn btn-sm ${period === 'today' ? 'btn-primary' : ''}`}>Today</Link>
+            <Link href="/pos?period=week" className={`btn btn-sm ${period === 'week' ? 'btn-primary' : ''}`}>This Week</Link>
+            <Link href="/pos?period=month" className={`btn btn-sm ${period === 'month' ? 'btn-primary' : ''}`}>This Month</Link>
+            <Link href="/pos" className={`btn btn-sm ${!period && !from && !to ? 'btn-primary' : ''}`}>All Time</Link>
+          </div>
+
+          <form method="GET" style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+            <span className="text-mono text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', marginRight: '8px' }}>Custom Range:</span>
             <input
-              name="date"
+              name="from"
               type="date"
               className="form-input"
               style={{ width: 'auto', padding: '8px 12px' }}
-              defaultValue={date ? dateStr : ''}
+              defaultValue={from || ''}
+            />
+            <span className="text-muted text-mono" style={{ fontSize: '11px' }}>TO</span>
+            <input
+              name="to"
+              type="date"
+              className="form-input"
+              style={{ width: 'auto', padding: '8px 12px' }}
+              defaultValue={to || ''}
             />
             <button type="submit" className="btn btn-primary btn-sm">Apply</button>
-            {date && <Link href="/pos" className="btn btn-sm">Clear</Link>}
+            {(from || to || period) && <Link href="/pos" className="btn btn-sm">Clear All</Link>}
           </form>
+
         </div>
       </div>
 
@@ -89,7 +125,7 @@ export default async function POSPage({
 
       <div className="card">
         <div className="card-header">
-          <h3 className="text-mono" style={{ fontSize: '14px' }}>{date ? `Transactions on ${dateStr}` : 'Recent Transactions'}</h3>
+          <h3 className="text-mono" style={{ fontSize: '14px' }}>{label}</h3>
           <span className="text-muted text-mono" style={{ fontSize: '12px' }}>{transactions?.length || 0} Total</span>
         </div>
         <div className="card-body" style={{ padding: 0 }}>
