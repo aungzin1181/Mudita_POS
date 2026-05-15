@@ -63,7 +63,7 @@ export default async function InventoryPage({
       </div>
 
       {/* Stats */}
-      <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: '24px' }}>
+      <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: '24px' }}>
         <div className="stat-card stat-card-accent">
           <div className="stat-label">Total SKUs</div>
           <div className="stat-value">{totalItems}</div>
@@ -78,6 +78,11 @@ export default async function InventoryPage({
           <div className="stat-label">Low Stock Items</div>
           <div className="stat-value">{lowCount}</div>
           <div className="stat-sub">{lowCount > 0 ? 'Action required' : 'All stocked'}</div>
+        </div>
+        <div className={`stat-card ${expiringCount > 0 ? 'stat-card-amber' : 'stat-card-green'}`}>
+          <div className="stat-label">Expiring Soon</div>
+          <div className="stat-value">{expiringCount}</div>
+          <div className="stat-sub">{expiringCount > 0 ? 'Within 90 days' : 'No near expiries'}</div>
         </div>
       </div>
 
