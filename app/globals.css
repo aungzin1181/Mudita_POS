@@ -216,6 +216,16 @@ button {
   background: #153f6e;
 }
 
+.btn-green {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+
+.btn-green:hover {
+  background: #10552b;
+}
+
 .btn-danger {
   background: var(--red-soft);
   color: var(--red);

@@ -207,7 +207,7 @@ export default function AppointmentView({ initialAppointments, date, doctors }: 
                     <div style={{ marginLeft: '16px' }}>
                       <button 
                         onClick={() => handleStatusChange(appt.id, 'visited')}
-                        className="btn btn-sm btn-primary"
+                        className={`btn btn-sm ${appt.transactions?.status === 'paid' ? 'btn-green' : 'btn-primary'}`}
                         disabled={loadingApptId === appt.id}
                       >
                         {loadingApptId === appt.id ? (
