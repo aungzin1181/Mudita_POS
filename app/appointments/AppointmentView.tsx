@@ -14,7 +14,7 @@ interface Doctor {
   specialization: string | null;
 }
 
-export default function AppointmentView({ initialAppointments, date, doctors }: { initialAppointments: Appointment[], date: string, doctors: Doctor[] }) {
+export default function AppointmentView({ initialAppointments, date, doctors, currentTab = 'today' }: { initialAppointments: Appointment[], date: string, doctors: Doctor[], currentTab?: string }) {
   const router = useRouter()
   const supabase = createClient()
   
@@ -148,8 +148,18 @@ export default function AppointmentView({ initialAppointments, date, doctors }: 
         />
       )}
 
-      {/* TODAY'S QUEUE */}
-      <h2 style={{ fontSize: '15px', fontWeight: 700, margin: '28px 0 12px' }}>Today's Queue — {new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '28px 0 12px' }}>
+        <h2 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>
+          {currentTab === 'today' ? "Today's Queue" : currentTab === 'week' ? "This Week's Queue" : "This Month's Queue"}
+          {currentTab === 'today' && <span style={{ fontWeight: 400, color: 'var(--muted)', marginLeft: '8px' }}>— {new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>}
+        </h2>
+        
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Link href="/appointments?tab=today" className={`btn btn-sm ${currentTab === 'today' ? 'btn-primary' : 'btn-ghost'}`}>Today</Link>
+          <Link href="/appointments?tab=week" className={`btn btn-sm ${currentTab === 'week' ? 'btn-primary' : 'btn-ghost'}`}>This Week</Link>
+          <Link href="/appointments?tab=month" className={`btn btn-sm ${currentTab === 'month' ? 'btn-primary' : 'btn-ghost'}`}>This Month</Link>
+        </div>
+      </div>
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div className="card-header">
           <span style={{ fontWeight: 600 }}>Queue</span>
@@ -233,7 +243,7 @@ export default function AppointmentView({ initialAppointments, date, doctors }: 
           </div>
         ) : (
            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)' }}>
-              No appointments for today.
+              No appointments found for {currentTab === 'today' ? 'today' : currentTab === 'week' ? 'this week' : 'this month'}.
            </div>
         )}
       </div>
