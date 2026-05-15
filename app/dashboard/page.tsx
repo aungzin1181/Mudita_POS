@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import {
   Users, ShoppingCart, Package,
-  TrendingUp, AlertTriangle, Receipt, Plus, Calendar
+  TrendingUp, AlertTriangle, Receipt, Calendar
 } from 'lucide-react';
 
 export default async function DashboardPage() {
@@ -56,10 +56,6 @@ export default async function DashboardPage() {
             Good day, <em>Doctor</em>
           </h1>
         </div>
-        <Link href="/pos/new" className="btn btn-primary">
-          <Plus size={18} />
-          New Transaction
-        </Link>
       </div>
 
       {/* STAT CARDS */}
