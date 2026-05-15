@@ -45,7 +45,9 @@ export default async function POSPage() {
               {transactions?.map((tx: Transaction) => (
                 <tr key={tx.id}>
                   <td className="text-mono" style={{ color: 'var(--accent)', fontWeight: 500 }}>{tx.invoice_no}</td>
-                  <td className="text-muted">{new Date(tx.created_at).toLocaleDateString()}</td>
+                  <td className="text-muted">
+                    {new Date(tx.created_at).toLocaleDateString()} {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </td>
                   <td>
                     <span className={`badge badge-${tx.status}`}>
                       {tx.status}

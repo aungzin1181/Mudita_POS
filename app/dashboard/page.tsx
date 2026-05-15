@@ -112,7 +112,7 @@ export default async function DashboardPage() {
                       {tx.invoice_no}
                     </td>
                     <td className="text-muted" style={{ fontSize: '13px' }}>
-                      {new Date(tx.created_at).toLocaleDateString()}
+                      {new Date(tx.created_at).toLocaleDateString()} {new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </td>
                     <td>
                       <span className={`badge badge-${tx.status}`}>{tx.status}</span>
