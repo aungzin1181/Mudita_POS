@@ -86,7 +86,7 @@ export async function applyDiscount(
   const userId = user?.id ?? null
 
   const { data: profile } = await supabase
-    .from('profiles').select('role').eq('id', userId ?? '').single()
+    .from('user_profiles').select('role').eq('id', userId ?? '').single()
 
   const canApplyDirectly = !user || ['admin', 'manager'].includes(profile?.role || '')
 
@@ -184,7 +184,7 @@ export async function voidTransaction(
   const userId = user?.id ?? null
 
   const { data: profile } = await supabase
-    .from('profiles').select('role').eq('id', userId ?? '').single()
+    .from('user_profiles').select('role').eq('id', userId ?? '').single()
 
   if (user && !['admin', 'manager'].includes(profile?.role || '')) {
     throw new Error('Insufficient permissions to void')
