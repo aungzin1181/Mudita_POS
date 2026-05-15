@@ -56,7 +56,7 @@ export async function updateTransactionItem(
       subtotal, 
       total_amount: total, 
       updated_by: userId,
-      status: subtotal > 0 ? 'open' : 'draft',
+      status: (activeItems?.length ?? 0) > 0 ? 'open' : 'draft',
       updated_at: new Date().toISOString()
     })
     .eq('id', transactionId)
@@ -379,5 +379,40 @@ export async function setTransactionDoctor(transactionId: string, doctorId: stri
   }
 
   revalidatePath(`/pos/transaction/${transactionId}`)
+  return { success: true }
+}
+
+/**
+ * Discard an empty draft transaction if the user exits without touching it.
+ */
+export async function discardEmptyDraft(transactionId: string) {
+  const supabase = await createClient()
+
+  // Verify it's still a draft
+  const { data: tx } = await supabase
+    .from('transactions')
+    .select('status')
+    .eq('id', transactionId)
+    .single()
+
+  if (!tx || tx.status !== 'draft') {
+    return { success: false, reason: 'not_draft' }
+  }
+
+  // Double check no active items exist
+  const { data: items } = await supabase
+    .from('transaction_items')
+    .select('id')
+    .eq('transaction_id', transactionId)
+    .eq('is_removed', false)
+
+  if (items && items.length > 0) {
+    return { success: false, reason: 'has_items' }
+  }
+
+  // Delete the draft completely
+  await supabase.from('transactions').delete().eq('id', transactionId)
+
+  revalidatePath('/pos')
   return { success: true }
 }

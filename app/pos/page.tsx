@@ -9,6 +9,7 @@ export default async function POSPage() {
   const { data: transactions } = await supabase
     .from('transactions')
     .select('*')
+    .neq('status', 'draft')
     .order('created_at', { ascending: false });
 
   return (

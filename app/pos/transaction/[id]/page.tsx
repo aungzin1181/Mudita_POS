@@ -6,6 +6,7 @@ import PaymentPanel from '@/components/pos/PaymentPanel'
 import TransactionHeader from '@/components/pos/TransactionHeader'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import TransactionBackButton from './TransactionBackButton'
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -43,10 +44,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
   return (
     <div className="container" style={{ maxWidth: '1400px' }}>
       <div className="flex justify-between items-center mb-4">
-        <Link href="/pos" className="btn" style={{ border: 'none', background: 'none', paddingLeft: 0 }}>
-          <ArrowLeft size={16} />
-          Back to Overview
-        </Link>
+        <TransactionBackButton transactionId={id} status={tx.status} />
         <div className="text-mono text-muted" style={{ fontSize: '12px' }}>
           Transaction ID: {id}
         </div>
