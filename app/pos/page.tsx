@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { Transaction } from '@/types/pos';
 import { Plus, Receipt } from 'lucide-react';
 
+import DateFilter from './DateFilter';
+
 export default async function POSPage({
   searchParams,
 }: {
@@ -70,38 +72,9 @@ export default async function POSPage({
       </header>
 
       {/* Filters and Stats */}
-      <div className="card" style={{ marginBottom: '24px' }}>
-        <div className="card-body" style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span className="text-mono text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', marginRight: '8px' }}>Quick Filters:</span>
-            <Link href="/pos?period=today" className={`btn btn-sm ${period === 'today' ? 'btn-primary' : ''}`}>Today</Link>
-            <Link href="/pos?period=week" className={`btn btn-sm ${period === 'week' ? 'btn-primary' : ''}`}>This Week</Link>
-            <Link href="/pos?period=month" className={`btn btn-sm ${period === 'month' ? 'btn-primary' : ''}`}>This Month</Link>
-            <Link href="/pos" className={`btn btn-sm ${!period && !from && !to ? 'btn-primary' : ''}`}>All Time</Link>
-          </div>
-
-          <form method="GET" style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
-            <span className="text-mono text-muted" style={{ fontSize: '11px', textTransform: 'uppercase', marginRight: '8px' }}>Custom Range:</span>
-            <input
-              name="from"
-              type="date"
-              className="form-input"
-              style={{ width: 'auto', padding: '8px 12px' }}
-              defaultValue={from || ''}
-            />
-            <span className="text-muted text-mono" style={{ fontSize: '11px' }}>TO</span>
-            <input
-              name="to"
-              type="date"
-              className="form-input"
-              style={{ width: 'auto', padding: '8px 12px' }}
-              defaultValue={to || ''}
-            />
-            <button type="submit" className="btn btn-primary btn-sm">Apply</button>
-            {(from || to || period) && <Link href="/pos" className="btn btn-sm">Clear All</Link>}
-          </form>
-
+      <div className="card" style={{ marginBottom: '24px', overflow: 'visible' }}>
+        <div className="card-body" style={{ padding: '16px 20px' }}>
+          <DateFilter period={period} from={from} to={to} />
         </div>
       </div>
 
