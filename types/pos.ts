@@ -154,4 +154,7 @@ export interface Appointment {
     full_name: string;
     specialization?: string | null;
   };
+  transactions?: {
+    status: TransactionStatus;
+  } | null;
 }

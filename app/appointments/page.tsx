@@ -16,7 +16,8 @@ export default async function AppointmentsPage() {
     .select(`
       id, appointment_date, appointment_time, status, reason, notes, patient_id, doctor_id, transaction_id,
       patients ( patient_no, full_name, phone_no ),
-      doctors  ( full_name, specialization )
+      doctors  ( full_name, specialization ),
+      transactions ( status )
     `)
     .order('appointment_date', { ascending: false })
     .order('appointment_time', { ascending: true })

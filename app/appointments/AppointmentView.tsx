@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Appointment } from '@/types/pos'
 import { markVisitedAndOpenPOS, updateAppointmentStatus, getCalendarData, createAppointment } from '@/app/actions/appointment'
 import { useRouter } from 'next/navigation'
-import { Loader2, Plus, Calendar as CalendarIcon, Check, X, CreditCard, ChevronLeft, ChevronRight, User } from 'lucide-react'
+import { Loader2, Plus, Calendar as CalendarIcon, Check, X, CreditCard, ChevronLeft, ChevronRight, User, ShoppingCart, Receipt } from 'lucide-react'
 import Link from 'next/link'
 
 interface Doctor {
@@ -210,7 +210,18 @@ export default function AppointmentView({ initialAppointments, date, doctors }: 
                         className="btn btn-sm btn-primary"
                         disabled={loadingApptId === appt.id}
                       >
-                        {loadingApptId === appt.id ? <Loader2 size={12} className="animate-spin" /> : <CreditCard size={12} />} Open POS
+                        {loadingApptId === appt.id ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : appt.transactions?.status === 'paid' ? (
+                          <Receipt size={12} />
+                        ) : appt.transactions?.status === 'open' || appt.transactions?.status === 'draft' ? (
+                          <ShoppingCart size={12} />
+                        ) : (
+                          <CreditCard size={12} />
+                        )} 
+                        {appt.transactions?.status === 'paid' ? 'View Invoice' : 
+                         appt.transactions?.status === 'open' || appt.transactions?.status === 'draft' ? 'Checkout' : 
+                         'Open POS'}
                       </button>
                     </div>
                   </>
