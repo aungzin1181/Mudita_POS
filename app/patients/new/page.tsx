@@ -47,10 +47,6 @@ export default function NewPatientPage() {
         date_of_birth: (data.get('date_of_birth') as string) || undefined,
         phone_no: (data.get('phone_no') as string) || undefined,
         address: (data.get('address') as string) || undefined,
-        blood_type: (data.get('blood_type') as string) || undefined,
-        blood_pressure: (data.get('blood_pressure') as string) || undefined,
-        weight: parseFloat(data.get('weight') as string) || undefined,
-        spo2: parseInt(data.get('spo2') as string) || undefined,
         medical_history: (data.get('medical_history') as string) || undefined,
       })
       router.push(`/patients/${patient.id}`)
@@ -95,9 +91,9 @@ export default function NewPatientPage() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: '24px', alignItems: 'start' }}>
+        <div style={{ maxWidth: 680 }}>
           {/* MAIN INFO */}
-          <div className="card">
+          <div className="card" style={{ marginBottom: 20 }}>
             <div className="card-header">
               <h3 className="text-mono" style={{ fontSize: '14px' }}>Personal Information</h3>
             </div>
@@ -117,23 +113,23 @@ export default function NewPatientPage() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Date of Birth</label>
-                  <input 
-                    name="date_of_birth" 
-                    type="date" 
-                    className="form-input" 
+                  <input
+                    name="date_of_birth"
+                    type="date"
+                    className="form-input"
                     value={dob}
                     onChange={(e) => setDob(e.target.value)}
                   />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Age (Auto)</label>
-                  <input 
-                    name="age" 
-                    type="number" 
-                    className="form-input" 
-                    placeholder="Years" 
+                  <input
+                    name="age"
+                    type="number"
+                    className="form-input"
+                    placeholder="Years"
                     value={age}
-                    onChange={(e) => setAge(e.target.value)} 
+                    onChange={(e) => setAge(e.target.value)}
                   />
                 </div>
               </div>
@@ -149,59 +145,20 @@ export default function NewPatientPage() {
                 <label className="form-label">Medical History</label>
                 <textarea name="medical_history" className="form-input" placeholder="Known allergies, chronic conditions, previous surgeries…" style={{ minHeight: '100px' }} />
               </div>
-            </div>
-          </div>
 
-          {/* VITALS & CLINICAL */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="card">
-              <div className="card-header">
-                <h3 className="text-mono" style={{ fontSize: '14px' }}>Patient Vitals (One-time Record)</h3>
-              </div>
-              <div className="card-body">
-                <div className="form-group">
-                  <label className="form-label">Blood Pressure</label>
-                  <input name="blood_pressure" type="text" className="form-input" placeholder="120/80" />
-                </div>
-                <div className="form-grid-2">
-                  <div className="form-group">
-                    <label className="form-label">Weight (kg)</label>
-                    <input name="weight" type="number" step="0.1" className="form-input" placeholder="0.0" />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">SPO2 (%)</label>
-                    <input name="spo2" type="number" className="form-input" placeholder="98" />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Blood Type</label>
-                  <select name="blood_type" className="form-input">
-                    <option value="">— Select —</option>
-                    <option>A+</option><option>A-</option>
-                    <option>B+</option><option>B-</option>
-                    <option>O+</option><option>O-</option>
-                    <option>AB+</option><option>AB-</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="card">
-              <div className="card-body">
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  style={{ width: '100%', justifyContent: 'center' }}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <UserPlus size={18} />
-                  )}
-                  Register Patient
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center', marginTop: 8 }}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <UserPlus size={18} />
+                )}
+                Register Patient
+              </button>
             </div>
           </div>
         </div>
