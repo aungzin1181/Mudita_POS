@@ -217,13 +217,13 @@ button {
 }
 
 .btn-green {
-  background: var(--green);
-  color: #fff;
-  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green);
+  border-color: var(--green-soft);
 }
 
 .btn-green:hover {
-  background: #10552b;
+  background: #c3eed6;
 }
 
 .btn-danger {
