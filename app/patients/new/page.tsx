@@ -47,6 +47,7 @@ export default function NewPatientPage() {
         date_of_birth: (data.get('date_of_birth') as string) || undefined,
         phone_no: (data.get('phone_no') as string) || undefined,
         address: (data.get('address') as string) || undefined,
+        blood_type: (data.get('blood_type') as string) || undefined,
         medical_history: (data.get('medical_history') as string) || undefined,
       })
       router.push(`/patients/${patient.id}`)
@@ -98,17 +99,32 @@ export default function NewPatientPage() {
               <h3 className="text-mono" style={{ fontSize: '14px' }}>Personal Information</h3>
             </div>
             <div className="card-body">
-              <div className="form-group">
-                <label className="form-label">Full Name *</label>
-                <input name="full_name" type="text" className="form-input" placeholder="e.g. Ko Aung" required />
-              </div>
-              <div className="form-grid-3">
+              {/* Row 1: Full Name + Gender */}
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label className="form-label">Full Name *</label>
+                  <input name="full_name" type="text" className="form-input" placeholder="e.g. Ko Aung" required />
+                </div>
                 <div className="form-group">
                   <label className="form-label">Gender *</label>
                   <select name="gender" className="form-input" required>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                     <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Row 2: Blood Type + Date of Birth + Age */}
+              <div className="form-grid-3">
+                <div className="form-group">
+                  <label className="form-label">Blood Type</label>
+                  <select name="blood_type" className="form-input">
+                    <option value="">— Select —</option>
+                    <option>A+</option><option>A-</option>
+                    <option>B+</option><option>B-</option>
+                    <option>O+</option><option>O-</option>
+                    <option>AB+</option><option>AB-</option>
                   </select>
                 </div>
                 <div className="form-group">
