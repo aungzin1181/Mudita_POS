@@ -13,11 +13,15 @@ export default function LoginPage() {
   )
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div style={{
+      position: 'fixed', inset: 0,
+      display: 'flex',
+      zIndex: 50,
+    }}>
 
       {/* ── LEFT PANEL: Logo / Brand ── */}
       <div style={{
-        flex: '0 0 55%',
+        flex: '0 0 50%',
         background: 'linear-gradient(145deg, #0f1923 0%, #1a2e4a 60%, #0e3060 100%)',
         display: 'flex',
         flexDirection: 'column',
@@ -86,7 +90,7 @@ export default function LoginPage() {
 
       {/* ── RIGHT PANEL: Login Form ── */}
       <div style={{
-        flex: 1,
+        flex: '0 0 50%',
         background: '#f5f2ec',
         display: 'flex',
         flexDirection: 'column',
