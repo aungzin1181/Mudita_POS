@@ -8,10 +8,21 @@ export interface ProductFormData {
   sku: string
   unit_price: number
   stock_qty: number
+  generic_name?: string | null
   category?: string
-  batch_no?: string
-  expiry_date?: string
+  dosage_strength?: string | null
+  unit_type?: string | null
+  pack_size?: number | null
+  batch_no?: string | null
+  expiry_date?: string | null
   low_stock_threshold?: number
+  reorder_level?: number | null
+  supplier?: string | null
+  manufacturer?: string | null
+  prescription_required?: boolean
+  is_controlled?: boolean
+  is_pos_visible?: boolean
+  notes?: string | null
   unit?: string
   is_active?: boolean
 }
@@ -34,9 +45,20 @@ export async function createProduct(data: ProductFormData) {
       unit_price: data.unit_price,
       stock_qty: data.stock_qty,
       category: data.category || 'general',
+      generic_name: data.generic_name || null,
+      dosage_strength: data.dosage_strength || null,
+      unit_type: data.unit_type || null,
+      pack_size: data.pack_size || null,
       batch_no: data.batch_no || null,
       expiry_date: data.expiry_date || null,
       low_stock_threshold: data.low_stock_threshold ?? 10,
+      reorder_level: data.reorder_level || null,
+      supplier: data.supplier || null,
+      manufacturer: data.manufacturer || null,
+      prescription_required: data.prescription_required ?? false,
+      is_controlled: data.is_controlled ?? false,
+      is_pos_visible: data.is_pos_visible ?? true,
+      notes: data.notes || null,
       unit: data.unit || 'unit',
       is_active: true,
     })
