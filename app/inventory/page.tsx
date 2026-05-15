@@ -30,9 +30,21 @@ export default async function InventoryPage({
 
   const products = filter === 'low'
     ? allProducts?.filter((p) => p.stock_qty <= (p.low_stock_threshold ?? 10))
+    : filter === 'expiring'
+    ? allProducts?.filter((p) => {
+        if (!p.expiry_date) return false;
+        const days = Math.ceil((new Date(p.expiry_date).getTime() - Date.now()) / 86400000);
+        return days >= 0 && days <= 90;
+      })
     : allProducts;
 
   const lowCount = allProducts?.filter((p) => p.stock_qty <= (p.low_stock_threshold ?? 10)).length ?? 0;
+  
+  const expiringCount = allProducts?.filter((p) => {
+    if (!p.expiry_date) return false;
+    const days = Math.ceil((new Date(p.expiry_date).getTime() - Date.now()) / 86400000);
+    return days >= 0 && days <= 90;
+  }).length ?? 0;
 
   // Stats
   const totalItems = allProducts?.length ?? 0;
@@ -70,11 +82,21 @@ export default async function InventoryPage({
       </div>
 
       {lowCount > 0 && !filter && (
-        <div className="alert alert-amber" style={{ marginBottom: '20px' }}>
+        <div className="alert alert-amber" style={{ marginBottom: '12px' }}>
           <AlertTriangle size={16} />
           <span>
             {lowCount} item{lowCount > 1 ? 's are' : ' is'} running low.{' '}
             <Link href="/inventory?filter=low" style={{ color: 'inherit', fontWeight: 600 }}>View low stock →</Link>
+          </span>
+        </div>
+      )}
+      
+      {expiringCount > 0 && !filter && (
+        <div className="alert alert-amber" style={{ marginBottom: '20px' }}>
+          <AlertTriangle size={16} />
+          <span>
+            {expiringCount} item{expiringCount > 1 ? 's are' : ' is'} expiring within 90 days.{' '}
+            <Link href="/inventory?filter=expiring" style={{ color: 'inherit', fontWeight: 600 }}>View expiring items →</Link>
           </span>
         </div>
       )}
@@ -91,6 +113,7 @@ export default async function InventoryPage({
           <div style={{ display: 'flex', gap: '8px' }}>
             <Link href="/inventory" className={`btn btn-sm ${!filter ? 'btn-primary' : ''}`}>All</Link>
             <Link href="/inventory?filter=low" className={`btn btn-sm ${filter === 'low' ? 'btn-primary' : ''}`}>Low Stock</Link>
+            <Link href="/inventory?filter=expiring" className={`btn btn-sm ${filter === 'expiring' ? 'btn-primary' : ''}`}>Expiring (90d)</Link>
           </div>
         </div>
       </div>
@@ -99,7 +122,7 @@ export default async function InventoryPage({
       <div className="card">
         <div className="card-header">
           <h3 className="text-mono" style={{ fontSize: '14px' }}>
-            {filter === 'low' ? '⚠️ Low Stock Items' : 'Product Catalog'}
+            {filter === 'low' ? '⚠️ Low Stock Items' : filter === 'expiring' ? '⚠️ Expiring Items' : 'Product Catalog'}
           </h3>
           <span className="text-muted text-mono" style={{ fontSize: '12px' }}>{products?.length ?? 0} items</span>
         </div>
@@ -123,7 +146,7 @@ export default async function InventoryPage({
                   const isLow = p.stock_qty <= (p.low_stock_threshold ?? 10);
                   const isExpiringSoon = p.expiry_date && (() => {
                     const days = Math.ceil((new Date(p.expiry_date).getTime() - Date.now()) / 86400000);
-                    return days >= 0 && days <= 30;
+                    return days >= 0 && days <= 90;
                   })();
                   return (
                     <tr key={p.id}>
