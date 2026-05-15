@@ -31,6 +31,7 @@ export default async function ReportsPage({
       .select('status, total_amount, subtotal, discount_amount, payment_method, created_at')
       .gte('created_at', fromISO)
       .lte('created_at', toISO)
+      .neq('status', 'draft')
       .order('created_at', { ascending: false }),
 
     // Top-selling items
@@ -52,7 +53,7 @@ export default async function ReportsPage({
 
   const paid = txData?.filter((t) => t.status === 'paid') ?? []
   const voided = txData?.filter((t) => t.status === 'voided') ?? []
-  const pending = txData?.filter((t) => ['draft', 'open'].includes(t.status)) ?? []
+  const pending = txData?.filter((t) => t.status === 'open') ?? []
 
   const totalRevenue = paid.reduce((s, t) => s + Number(t.total_amount), 0)
   const totalDiscount = paid.reduce((s, t) => s + Number(t.discount_amount), 0)
