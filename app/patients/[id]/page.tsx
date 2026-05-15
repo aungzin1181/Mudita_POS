@@ -45,10 +45,6 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
 
   if (!patient) notFound()
 
-  // Use the latest vitals for the summary cards, fallback to patient record values
-  const displayWeight = vitals?.[0]?.weight ?? patient.weight
-  const displayBP = vitals?.[0]?.blood_pressure ?? patient.blood_pressure
-  const displaySPO2 = vitals?.[0]?.spo2 ?? patient.spo2
 
   return (
     <div className="container">
@@ -73,24 +69,6 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
         {/* LEFT: Info + Vitals History */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
-          {/* Latest Vitals Summary Card */}
-          <div className="grid gap-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-             <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>Weight</div>
-                <div style={{ fontSize: '20px', fontWeight: 700 }}>{displayWeight ? `${displayWeight} kg` : '—'}</div>
-             </div>
-             <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>BP</div>
-                <div style={{ fontSize: '20px', fontWeight: 700 }}>{displayBP || '—'}</div>
-             </div>
-             <div className="card" style={{ padding: '16px', textAlign: 'center' }}>
-                <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>SPO2</div>
-                <div style={{ fontSize: '20px', fontWeight: 700, color: (displaySPO2 && displaySPO2 < 95) ? 'var(--red)' : 'inherit' }}>
-                  {displaySPO2 ? `${displaySPO2}%` : '—'}
-                </div>
-             </div>
-          </div>
-
           {/* Vitals History Component */}
           <VitalsHistory patientId={id} history={(vitals || []) as PatientVital[]} />
 
