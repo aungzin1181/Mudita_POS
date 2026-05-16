@@ -35,7 +35,7 @@ export default function ReportsClient({
   const pftMax = Math.max(...profitData.daily.map((d: any) => d.rev), 1)
 
   return (
-    <div className="report-container" style={{ minHeight: 'calc(100vh - 80px)' }}>
+    <div className="report-container container" style={{ minHeight: 'calc(100vh - 80px)' }}>
       {/* ══════════════ SHARED PAGE HEADER + TABS ══════════════ */}
       <div className="page-eyebrow">Analytics</div>
       <div className="page-title">Revenue <em>Reports</em></div>
