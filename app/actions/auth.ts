@@ -60,6 +60,16 @@ export async function loginWithPassword(formData: FormData) {
     .update({ failed_attempts: 0, is_locked: false, last_login_at: new Date().toISOString() })
     .eq('id', userId)
 
+  await writeAuditLog({
+    performed_by: userId,
+    module: 'auth',
+    action: 'login',
+    entity_type: 'user',
+    entity_id: userId,
+    entity_label: data.user.email ?? undefined,
+    ip_address: ip,
+  })
+
   redirect('/dashboard')
 }
 
