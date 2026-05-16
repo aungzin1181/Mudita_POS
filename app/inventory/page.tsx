@@ -139,6 +139,7 @@ export default async function InventoryPage({
                   <th>Product</th>
                   <th>SKU</th>
                   <th>Category</th>
+                  <th>Buying Price</th>
                   <th>Unit Price</th>
                   <th>Stock</th>
                   <th>Expiry</th>
@@ -163,6 +164,9 @@ export default async function InventoryPage({
                             {p.category}
                           </span>
                         )}
+                      </td>
+                      <td className="text-mono" style={{ fontSize: '12px', color: 'var(--ink-muted)' }}>
+                        {p.buying_price != null ? `${Number(p.buying_price).toLocaleString()} MMK` : <span style={{ color: 'var(--muted)' }}>—</span>}
                       </td>
                       <td className="text-mono">{Number(p.unit_price).toLocaleString()} MMK</td>
                       <td>

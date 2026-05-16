@@ -20,6 +20,7 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
   const [strength, setStrength] = useState(initialData?.dosage_strength || '')
   const [unitType, setUnitType] = useState(initialData?.unit_type || 'Tablet')
   const [price, setPrice] = useState(initialData?.unit_price || 0)
+  const [buyingPrice, setBuyingPrice] = useState<number | ''>(initialData?.buying_price ?? '')
   const [expiry, setExpiry] = useState(initialData?.expiry_date || '')
   const [rx, setRx] = useState(initialData?.prescription_required || false)
   const [status, setStatus] = useState(initialData?.is_active ?? true)
@@ -46,6 +47,7 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
       unit_type: data.get('unit_type') as string,
       pack_size: parseInt(data.get('pack_size') as string) || null,
       unit_price: parseFloat(data.get('unit_price') as string) || 0,
+      buying_price: parseFloat(data.get('buying_price') as string) || null,
       stock_qty: parseInt(data.get('stock_qty') as string) || 0,
       low_stock_threshold: parseInt(data.get('low_stock_threshold') as string) || 10,
       reorder_level: parseInt(data.get('reorder_level') as string) || null,
@@ -166,6 +168,14 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
                       <span className="pf-ig-pre">MMK</span>
                       <input name="unit_price" className="pf-inp" type="number" value={price || ''} onChange={e => setPrice(parseFloat(e.target.value) || 0)} required />
                     </div>
+                  </div>
+                  <div className="pf-field">
+                    <label className="pf-lbl">Buying Price</label>
+                    <div className="pf-ig">
+                      <span className="pf-ig-pre">MMK</span>
+                      <input name="buying_price" className="pf-inp" type="number" value={buyingPrice} onChange={e => setBuyingPrice(parseFloat(e.target.value) || '')} placeholder="Cost price" />
+                    </div>
+                    <span className="pf-hint">Purchase / cost price per unit</span>
                   </div>
                 </div>
 
@@ -302,7 +312,8 @@ export default function ProductForm({ initialData }: { initialData?: Product }) 
                 <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Brand</span><span className="pf-sum-val">{name || '—'}</span></div>
                 <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Generic</span><span className="pf-sum-val" style={{ color: 'var(--accent)' }}>{generic || '—'}</span></div>
                 <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Strength</span><span className="pf-sum-val">{strength || '—'} · {unitType}</span></div>
-                <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Price</span><span className="pf-sum-val">MMK {price.toLocaleString()}</span></div>
+                <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Selling Price</span><span className="pf-sum-val">MMK {price.toLocaleString()}</span></div>
+                <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Buying Price</span><span className="pf-sum-val" style={{ color: buyingPrice ? 'var(--green)' : 'var(--muted)' }}>{buyingPrice ? `MMK ${Number(buyingPrice).toLocaleString()}` : '—'}</span></div>
                 <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Stock</span><span className="pf-sum-val" style={{ color: stockColor }}>{stockQty} {unitType}s</span></div>
                 <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Expiry</span><span className="pf-sum-val">{expiry ? new Date(expiry).toLocaleDateString() : '—'}</span></div>
                 <div className="pf-sum-row"><span style={{ color: 'var(--muted)' }}>Rx</span><span className="pf-sum-val" style={{ color: 'var(--muted)' }}>{rx ? 'Required' : 'Not required'}</span></div>

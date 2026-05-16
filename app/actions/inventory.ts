@@ -7,6 +7,7 @@ export interface ProductFormData {
   name: string
   sku: string
   unit_price: number
+  buying_price?: number | null
   stock_qty: number
   generic_name?: string | null
   category?: string
@@ -43,6 +44,7 @@ export async function createProduct(data: ProductFormData) {
       name: data.name,
       sku: data.sku,
       unit_price: data.unit_price,
+      buying_price: data.buying_price ?? null,
       stock_qty: data.stock_qty,
       category: data.category || 'general',
       generic_name: data.generic_name || null,

@@ -117,6 +117,7 @@ export interface Product {
   name: string;
   sku: string;
   unit_price: number;
+  buying_price?: number | null;
   stock_qty: number;
   is_active: boolean;
   generic_name?: string | null;
