@@ -21,7 +21,7 @@ export default function LoginPage() {
 
       {/* ── LEFT PANEL: Logo / Brand ── */}
       <div style={{
-        flex: '0 0 50%',
+        flex: 1,
         background: 'linear-gradient(145deg, #0f1923 0%, #1a2e4a 60%, #0e3060 100%)',
         display: 'flex',
         flexDirection: 'column',
@@ -90,7 +90,7 @@ export default function LoginPage() {
 
       {/* ── RIGHT PANEL: Login Form ── */}
       <div style={{
-        flex: '0 0 50%',
+        flex: 2,
         background: '#f5f2ec',
         display: 'flex',
         flexDirection: 'column',
