@@ -13,6 +13,7 @@ import {
   Stethoscope,
   Calendar,
   UserCog,
+  Shield,
 } from 'lucide-react'
 
 const navItems = [
@@ -27,6 +28,7 @@ const navItems = [
 
 const adminItems = [
   { href: '/settings/users',  label: 'User Admin',   icon: UserCog },
+  { href: '/settings/audit-log', label: 'Audit Log',  icon: Shield },
 ]
 
 export default function Sidebar() {

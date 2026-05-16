@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { writeAuditLog } from '@/lib/audit'
 
 export interface PatientFormData {
   full_name: string
@@ -34,10 +35,8 @@ export interface VitalsFormData {
  */
 export async function createPatient(data: PatientFormData) {
   const supabase = await createClient()
-  
-  // NOTE: Auth check relaxed for development to fix "Unauthenticated" blocking issue.
   const { data: { user } } = await supabase.auth.getUser()
-  void user // unused but ensures session is refreshed
+  const userId = user?.id ?? null
 
   const { data: patient, error } = await supabase
     .from('patients')
@@ -62,6 +61,16 @@ export async function createPatient(data: PatientFormData) {
     throw error
   }
 
+  await writeAuditLog({
+    performed_by: userId,
+    module: 'patient',
+    action: 'patient_created',
+    entity_type: 'patient',
+    entity_id: patient.id,
+    entity_label: data.full_name,
+    new_data: { ...data } as unknown as Record<string, unknown>,
+  })
+
   revalidatePath('/patients')
   return patient
 }
@@ -71,6 +80,15 @@ export async function createPatient(data: PatientFormData) {
  */
 export async function updatePatient(id: string, data: PatientFormData) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const userId = user?.id ?? null
+
+  // Capture previous state
+  const { data: before } = await supabase
+    .from('patients')
+    .select('*')
+    .eq('id', id)
+    .single()
 
   const { data: patient, error } = await supabase
     .from('patients')
@@ -93,6 +111,17 @@ export async function updatePatient(id: string, data: PatientFormData) {
 
   if (error) throw error
 
+  await writeAuditLog({
+    performed_by: userId,
+    module: 'patient',
+    action: 'patient_updated',
+    entity_type: 'patient',
+    entity_id: id,
+    entity_label: data.full_name,
+    previous_data: before as unknown as Record<string, unknown>,
+    new_data: { ...data } as unknown as Record<string, unknown>,
+  })
+
   revalidatePath('/patients')
   revalidatePath(`/patients/${id}`)
   return patient
@@ -103,24 +132,23 @@ export async function updatePatient(id: string, data: PatientFormData) {
  */
 export async function recordVitals(data: VitalsFormData) {
   const supabase = await createClient()
-
-  // NOTE: Auth check relaxed for development to fix "Unauthenticated" blocking issue.
   const { data: { user } } = await supabase.auth.getUser()
-  void user // unused but ensures session is refreshed
+  const userId = user?.id ?? null
 
-  // 1. Insert into historical tracking table
+  // 1. Insert into historical tracking table (now with recorded_by)
   const { data: record, error: insertError } = await supabase
     .from('patient_vitals')
     .insert({
-      patient_id: data.patient_id,
+      patient_id:     data.patient_id,
       blood_pressure: data.blood_pressure || null,
-      weight: data.weight || null,
-      spo2: data.spo2 || null,
-      temperature: data.temperature || null,
-      pulse_rate: data.pulse_rate || null,
-      notes: data.notes || null,
-      diagnosis: data.diagnosis || null,
-      treatments: data.treatments || null,
+      weight:         data.weight || null,
+      spo2:           data.spo2 || null,
+      temperature:    data.temperature || null,
+      pulse_rate:     data.pulse_rate || null,
+      notes:          data.notes || null,
+      diagnosis:      data.diagnosis || null,
+      treatments:     data.treatments || null,
+      recorded_by:    userId,
     })
     .select()
     .single()
@@ -130,22 +158,28 @@ export async function recordVitals(data: VitalsFormData) {
     throw insertError
   }
 
-  // 2. Sync latest vitals back to the patient record for quick access/summary
-  // We only sync BP, Weight, and SPO2 as those columns currently exist on the patients table
+  // 2. Sync latest vitals back to patient record
   const { error: updateError } = await supabase
     .from('patients')
     .update({
       blood_pressure: data.blood_pressure || null,
-      weight: data.weight || null,
-      spo2: data.spo2 || null,
+      weight:         data.weight || null,
+      spo2:           data.spo2 || null,
     })
     .eq('id', data.patient_id)
 
   if (updateError) {
     console.error('Error syncing vitals to patient:', updateError)
-    // We don't throw here to ensure the record creation is considered a success
-    // even if sync fails, but we log it.
   }
+
+  await writeAuditLog({
+    performed_by: userId,
+    module: 'patient',
+    action: 'vitals_recorded',
+    entity_type: 'patient',
+    entity_id: data.patient_id,
+    new_data: { ...data } as unknown as Record<string, unknown>,
+  })
 
   revalidatePath(`/patients/${data.patient_id}`)
   return record
@@ -156,9 +190,28 @@ export async function recordVitals(data: VitalsFormData) {
  */
 export async function deletePatient(id: string) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const userId = user?.id ?? null
+
+  // Capture record before deletion
+  const { data: before } = await supabase
+    .from('patients')
+    .select('full_name, patient_no, phone_no')
+    .eq('id', id)
+    .single()
 
   const { error } = await supabase.from('patients').delete().eq('id', id)
   if (error) throw error
+
+  await writeAuditLog({
+    performed_by: userId,
+    module: 'patient',
+    action: 'patient_deleted',
+    entity_type: 'patient',
+    entity_id: id,
+    entity_label: before?.full_name ?? id,
+    previous_data: before as unknown as Record<string, unknown>,
+  })
 
   revalidatePath('/patients')
   return { success: true }

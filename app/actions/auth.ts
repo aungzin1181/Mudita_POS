@@ -4,6 +4,7 @@ import { createClient }  from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { redirect }      from 'next/navigation'
 import { headers }       from 'next/headers'
+import { writeAuditLog } from '@/lib/audit'
 
 // ── Login with Email + Password ──
 export async function loginWithPassword(formData: FormData) {
@@ -77,6 +78,17 @@ export async function sendPasswordReset(formData: FormData) {
 
 export async function logout() {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  await writeAuditLog({
+    performed_by: user?.id ?? null,
+    module: 'auth',
+    action: 'logout',
+    entity_type: 'user',
+    entity_id: user?.id ?? undefined,
+    entity_label: user?.email ?? undefined,
+  })
+
   await supabase.auth.signOut()
   redirect('/login')
 }

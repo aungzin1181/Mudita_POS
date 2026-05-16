@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { writeAuditLog } from '@/lib/audit'
 
 export interface ProductFormData {
   name: string
@@ -33,10 +34,8 @@ export interface ProductFormData {
  */
 export async function createProduct(data: ProductFormData) {
   const supabase = await createClient()
-  
-  // NOTE: Auth check relaxed for development.
   const { data: { user } } = await supabase.auth.getUser()
-  void user // unused but ensures session is refreshed
+  const userId = user?.id ?? null
 
   const { data: product, error } = await supabase
     .from('products')
@@ -68,6 +67,17 @@ export async function createProduct(data: ProductFormData) {
     .single()
 
   if (error) throw error
+
+  await writeAuditLog({
+    performed_by: userId,
+    module: 'inventory',
+    action: 'product_created',
+    entity_type: 'product',
+    entity_id: product.id,
+    entity_label: `${data.name} (${data.sku})`,
+    new_data: data as unknown as Record<string, unknown>,
+  })
+
   revalidatePath('/inventory')
   return product
 }
@@ -77,6 +87,15 @@ export async function createProduct(data: ProductFormData) {
  */
 export async function updateProduct(id: string, data: Partial<ProductFormData>) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const userId = user?.id ?? null
+
+  // Capture previous state for the audit trail
+  const { data: before } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .single()
 
   const { data: product, error } = await supabase
     .from('products')
@@ -89,6 +108,18 @@ export async function updateProduct(id: string, data: Partial<ProductFormData>) 
     .single()
 
   if (error) throw error
+
+  await writeAuditLog({
+    performed_by: userId,
+    module: 'inventory',
+    action: 'product_updated',
+    entity_type: 'product',
+    entity_id: id,
+    entity_label: before?.name ? `${before.name} (${before.sku})` : id,
+    previous_data: before as unknown as Record<string, unknown>,
+    new_data: data as unknown as Record<string, unknown>,
+  })
+
   revalidatePath('/inventory')
   return product
 }
@@ -98,14 +129,17 @@ export async function updateProduct(id: string, data: Partial<ProductFormData>) 
  */
 export async function adjustStock(productId: string, delta: number) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  const userId = user?.id ?? null
 
   const { data: product } = await supabase
     .from('products')
-    .select('stock_qty')
+    .select('stock_qty, name, sku')
     .eq('id', productId)
     .single()
 
-  const newQty = Math.max(0, (product?.stock_qty ?? 0) + delta)
+  const oldQty = product?.stock_qty ?? 0
+  const newQty = Math.max(0, oldQty + delta)
 
   const { error } = await supabase
     .from('products')
@@ -113,6 +147,18 @@ export async function adjustStock(productId: string, delta: number) {
     .eq('id', productId)
 
   if (error) throw error
+
+  await writeAuditLog({
+    performed_by: userId,
+    module: 'inventory',
+    action: 'stock_adjusted',
+    entity_type: 'product',
+    entity_id: productId,
+    entity_label: product?.name ? `${product.name} (${product.sku})` : productId,
+    previous_data: { stock_qty: oldQty },
+    new_data: { stock_qty: newQty, delta },
+  })
+
   revalidatePath('/inventory')
   return { success: true, newQty }
 }

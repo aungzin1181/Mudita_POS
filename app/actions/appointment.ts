@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { writeAuditLog } from '@/lib/audit'
 
 type AppointmentResult = { success: boolean; error?: string; appointment_id?: string }
 
@@ -42,6 +43,21 @@ export async function createAppointment(formData: FormData): Promise<Appointment
     if (!data?.success) {
       return { success: false, error: friendlyAppointmentError(data?.error ?? 'Unknown error') }
     }
+
+    await writeAuditLog({
+      performed_by: user?.id ?? null,
+      module: 'appointment',
+      action: 'appointment_created',
+      entity_type: 'appointment',
+      entity_id: data.appointment_id,
+      new_data: {
+        patient_id: formData.get('patient_id'),
+        doctor_id:  formData.get('doctor_id'),
+        date:       formData.get('date'),
+        time:       formData.get('time'),
+        reason:     formData.get('reason'),
+      } as Record<string, unknown>,
+    })
 
     revalidatePath('/', 'layout')
     return { success: true, appointment_id: data.appointment_id }
@@ -117,9 +133,14 @@ export async function updateAppointmentStatus(
   notes?: string
 ) {
   const supabase = await createClient()
-
   const { data: { user } } = await supabase.auth.getUser()
   void user
+
+  const { data: appt } = await supabase
+    .from('appointments')
+    .select('status, patients(full_name)')
+    .eq('id', appointmentId)
+    .single()
 
   const { data, error } = await supabase.rpc('update_appointment_status', {
     p_appointment_id: appointmentId,
@@ -128,6 +149,17 @@ export async function updateAppointmentStatus(
   })
 
   if (error || !data?.success) throw new Error(data?.error || error?.message)
+
+  await writeAuditLog({
+    performed_by: user?.id ?? null,
+    module: 'appointment',
+    action: 'status_changed',
+    entity_type: 'appointment',
+    entity_id: appointmentId,
+    previous_data: { status: (appt as any)?.status },
+    new_data: { status, notes: notes ?? null },
+  })
+
   revalidatePath('/appointments')
 }
 
