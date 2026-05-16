@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { TransactionItem } from '@/types/pos'
 import { updateTransactionItem } from '@/app/actions/transaction'
-import { Trash2, Plus, Minus, ShoppingCart, Loader2 } from 'lucide-react'
+import { Trash2, Plus, Minus, ShoppingCart as CartIcon, Loader2 } from 'lucide-react'
 
 interface ShoppingCartProps {
   transactionId: string
@@ -37,7 +37,7 @@ export default function ShoppingCart({ transactionId, items, isEditable }: Shopp
     <div className="card">
       <div className="card-header">
         <h3 className="text-mono" style={{ fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <ShoppingCart size={16} /> Shopping Cart
+          <CartIcon size={16} /> Shopping Cart
         </h3>
         <span className="badge badge-open">{items.length} items</span>
       </div>
