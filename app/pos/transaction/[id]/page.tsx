@@ -2,10 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Transaction, TransactionItem, Service, Product, Doctor } from '@/types/pos'
 import ItemList from '@/components/pos/ItemList'
+import ShoppingCart from '@/components/pos/ShoppingCart'
 import PaymentPanel from '@/components/pos/PaymentPanel'
 import TransactionHeader from '@/components/pos/TransactionHeader'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import TransactionBackButton from './TransactionBackButton'
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -41,6 +40,8 @@ export default async function TransactionDetailPage({ params }: { params: Promis
     supabase.from('patients').select('*').eq('id', tx.patient_id).single()
   ])
 
+  const isEditable = ['draft', 'open'].includes(tx.status)
+
   return (
     <div className="container" style={{ maxWidth: '1400px' }}>
       <div className="flex justify-between items-center mb-4">
@@ -58,24 +59,28 @@ export default async function TransactionDetailPage({ params }: { params: Promis
 
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: '1fr 400px', 
+        gridTemplateColumns: '1fr 420px', 
         gap: '24px', 
         alignItems: 'start', 
         marginTop: '20px' 
       }}>
-        {/* LEFT: Grid-based Item Selector + Cart */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {/* LEFT: Catalog Selector only */}
+        <div>
           <ItemList
             transactionId={id}
-            items={(items || []) as TransactionItem[]}
-            isEditable={['draft', 'open'].includes(tx.status)}
+            isEditable={isEditable}
             services={(services || []) as Service[]}
             products={(products || []) as Product[]}
           />
         </div>
 
-        {/* RIGHT: Summary & Payment */}
+        {/* RIGHT: Shopping Cart (top) → Bill Summary & Payment (bottom) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <ShoppingCart
+            transactionId={id}
+            items={(items || []) as TransactionItem[]}
+            isEditable={isEditable}
+          />
           <PaymentPanel transaction={tx as Transaction} />
         </div>
       </div>
