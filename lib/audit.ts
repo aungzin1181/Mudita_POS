@@ -8,7 +8,7 @@ import { supabaseAdmin } from '@/lib/supabase/admin'
 
 export interface AuditEntry {
   performed_by?: string | null
-  module: 'inventory' | 'patient' | 'doctor' | 'appointment' | 'user_mgmt' | 'auth'
+  module: 'inventory' | 'patient' | 'doctor' | 'appointment' | 'user_mgmt' | 'auth' | 'pos'
   action: string
   entity_type: string
   entity_id?: string | null

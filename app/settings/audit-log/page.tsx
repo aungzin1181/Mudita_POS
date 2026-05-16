@@ -9,6 +9,7 @@ const MODULE_META: Record<string, { label: string; color: string; icon: string }
   appointment: { label: 'Appointment', color: '#d97706', icon: '📅' },
   user_mgmt:   { label: 'User Mgmt',   color: '#dc2626', icon: '👤' },
   auth:        { label: 'Auth',        color: '#475569', icon: '🔐' },
+  pos:         { label: 'POS',         color: '#10b981', icon: '🛒' },
 }
 
 const ACTION_LABELS: Record<string, string> = {
@@ -30,7 +31,15 @@ const ACTION_LABELS: Record<string, string> = {
   user_unlocked:       'Account Unlocked',
   role_changed:        'Role Changed',
   password_reset:      'Password Reset',
+  login:               'Login',
   logout:              'Logout',
+  transaction_created: 'Transaction Created',
+  item_added:          'Item Added',
+  item_removed:        'Item Removed',
+  qty_changed:         'Quantity Changed',
+  discount_applied:    'Discount Applied',
+  transaction_paid:    'Transaction Paid',
+  transaction_voided:  'Transaction Voided',
 }
 
 export default async function AuditLogPage({

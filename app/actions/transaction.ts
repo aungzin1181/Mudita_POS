@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { UpdateItemPayload } from '@/types/pos'
+import { writeAuditLog } from '@/lib/audit'
 
 /**
  * Update a transaction item's quantity or mark as removed.
@@ -61,10 +62,13 @@ export async function updateTransactionItem(
     })
     .eq('id', transactionId)
 
-  await supabase.from('transaction_audit_log').insert({
-    transaction_id: transactionId,
+  await writeAuditLog({
     performed_by: userId,
+    module: 'pos',
     action: payload.is_removed ? 'item_removed' : 'qty_changed',
+    entity_type: 'transaction',
+    entity_id: transactionId,
+    entity_label: `Item: ${oldItem?.description || itemId}`,
     previous_data: oldItem,
     new_data: { ...oldItem, ...payload },
   })
@@ -115,10 +119,13 @@ export async function applyDiscount(
     updated_at: new Date().toISOString()
   }).eq('id', transactionId)
 
-  await supabase.from('transaction_audit_log').insert({
-    transaction_id: transactionId,
+  await writeAuditLog({
     performed_by: userId,
+    module: 'pos',
     action: 'discount_applied',
+    entity_type: 'transaction',
+    entity_id: transactionId,
+    entity_label: `Discount: ${discountAmount}`,
     new_data: { discount_amount: discountAmount, reason },
   })
 
@@ -161,10 +168,13 @@ export async function markAsPaid(
     updated_at: new Date().toISOString()
   }).eq('id', transactionId)
 
-  await supabase.from('transaction_audit_log').insert({
-    transaction_id: transactionId,
+  await writeAuditLog({
     performed_by: userId,
-    action: 'paid',
+    module: 'pos',
+    action: 'transaction_paid',
+    entity_type: 'transaction',
+    entity_id: transactionId,
+    entity_label: `Paid: ${amountPaid}`,
     new_data: { amount_paid: amountPaid, change, paymentMethod },
   })
 
@@ -220,10 +230,13 @@ export async function voidTransaction(
     }
   }
 
-  await supabase.from('transaction_audit_log').insert({
-    transaction_id: transactionId,
+  await writeAuditLog({
     performed_by: userId,
-    action: 'voided',
+    module: 'pos',
+    action: 'transaction_voided',
+    entity_type: 'transaction',
+    entity_id: transactionId,
+    entity_label: `Voided: ${reason}`,
     new_data: { reason },
   })
 
@@ -257,10 +270,13 @@ export async function createTransaction(patientId: string) {
 
   if (error) throw error
 
-  await supabase.from('transaction_audit_log').insert({
-    transaction_id: tx.id,
+  await writeAuditLog({
     performed_by: userId,
-    action: 'created',
+    module: 'pos',
+    action: 'transaction_created',
+    entity_type: 'transaction',
+    entity_id: tx.id,
+    entity_label: invoiceNo,
   })
 
   revalidatePath('/pos')
@@ -326,10 +342,13 @@ export async function addTransactionItem(
     })
     .eq('id', transactionId)
 
-  await supabase.from('transaction_audit_log').insert({
-    transaction_id: transactionId,
+  await writeAuditLog({
     performed_by: userId,
+    module: 'pos',
     action: 'item_added',
+    entity_type: 'transaction',
+    entity_id: transactionId,
+    entity_label: `Item: ${payload.description}`,
     new_data: item
   })
 
