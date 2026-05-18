@@ -70,6 +70,31 @@ ALTER TABLE transaction_audit_log
   ALTER COLUMN performed_by DROP NOT NULL;
 
 -- ---------------------------------------------------------------
+-- FIX 5: Set Database and Role Timezones to Myanmar Standard Time (MMT)
+-- ---------------------------------------------------------------
+DO $$
+BEGIN
+  EXECUTE 'ALTER DATABASE ' || current_database() || ' SET timezone TO ''Asia/Yangon''';
+END $$;
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'postgres') THEN
+    ALTER ROLE postgres SET timezone TO 'Asia/Yangon';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticator') THEN
+    ALTER ROLE authenticator SET timezone TO 'Asia/Yangon';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+    ALTER ROLE service_role SET timezone TO 'Asia/Yangon';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+    ALTER ROLE anon SET timezone TO 'Asia/Yangon';
+  END IF;
+END $$;
+
+-- ---------------------------------------------------------------
 -- Done!
 -- ---------------------------------------------------------------
 SELECT 'All fixes applied successfully' AS status;
+

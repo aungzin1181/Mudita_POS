@@ -67,9 +67,33 @@ export default async function PrintTransactionPage({ params }: { params: Promise
         .receipt-header p { margin: 3px 0; color: #334155; font-size: 10px; line-height: 1.4; }
         .receipt-divider { border-top: 1px dashed #cbd5e1; margin: 10px 0; }
         .receipt-row { display: flex; justify-content: space-between; margin: 4px 0; }
-        .receipt-item-row { margin: 8px 0; }
-        .receipt-item-desc { font-weight: 600; color: #0f172a; }
-        .receipt-item-details { display: flex; justify-content: space-between; font-size: 10px; color: #475569; }
+        .receipt-item-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          margin: 6px 0;
+        }
+        .receipt-item-left {
+          display: flex;
+          gap: 6px;
+          align-items: baseline;
+          flex-wrap: wrap;
+          max-width: 75%;
+        }
+        .receipt-item-desc {
+          font-weight: 600;
+          color: #0f172a;
+        }
+        .receipt-item-qty {
+          font-size: 10px;
+          color: #475569;
+          font-weight: normal;
+        }
+        .receipt-item-total {
+          font-weight: 600;
+          color: #0f172a;
+          white-space: nowrap;
+        }
         .receipt-total-row {
           display: flex;
           justify-content: space-between;
@@ -135,7 +159,18 @@ export default async function PrintTransactionPage({ params }: { params: Promise
 
           <div className="receipt-row">
             <span>Date:</span>
-            <span>{new Date(tx.created_at).toLocaleString()}</span>
+            <span>
+              {new Date(tx.created_at).toLocaleString('en-US', {
+                timeZone: 'Asia/Yangon',
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                hour12: true
+              })} (MMT)
+            </span>
           </div>
           <div className="receipt-row">
             <span>Invoice:</span>
@@ -163,11 +198,15 @@ export default async function PrintTransactionPage({ params }: { params: Promise
           <div className="receipt-items">
             {items?.map((item: TransactionItem) => (
               <div key={item.id} className="receipt-item-row">
-                <div className="receipt-item-desc">{item.description}</div>
-                <div className="receipt-item-details">
-                  <span>{item.quantity} x {Number(item.unit_price).toLocaleString()} MMK</span>
-                  <span>{Number(item.line_total).toLocaleString()} MMK</span>
+                <div className="receipt-item-left">
+                  <span className="receipt-item-desc">{item.description}</span>
+                  <span className="receipt-item-qty">
+                    ({item.quantity} x {Number(item.unit_price).toLocaleString()} MMK)
+                  </span>
                 </div>
+                <span className="receipt-item-total">
+                  {Number(item.line_total).toLocaleString()} MMK
+                </span>
               </div>
             ))}
           </div>
