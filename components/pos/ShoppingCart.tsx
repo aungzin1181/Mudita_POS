@@ -88,52 +88,56 @@ export default function ShoppingCart({
             {items.map(item => (
               <tr key={item.id}>
                 <td>
-                  <div style={{ fontWeight: 600 }}>{item.description}</div>
-                  <div className="text-mono text-muted" style={{ fontSize: '10px', textTransform: 'uppercase' }}>
+                  <div style={{ fontWeight: 600, fontSize: '12px' }}>{item.description}</div>
+                  <div className="text-mono text-muted" style={{ fontSize: '9px', textTransform: 'uppercase' }}>
                     {item.item_type}
                   </div>
                 </td>
                 <td>
                   <div className="flex items-center justify-center">
-                    {isEditable && (item.item_type !== 'consultation' || !autoConsultationFee) ? (
-                      <input
-                        type="number"
-                        min="1"
-                        step="1"
-                        defaultValue={item.quantity}
-                        key={`${item.id}-${item.quantity}`}
-                        className="form-input text-mono"
-                        style={{
-                          width: '64px',
-                          padding: '4px 6px',
-                          fontSize: '13px',
-                          textAlign: 'center',
-                          background: 'var(--surface-alt)',
-                          border: '1px solid var(--border)',
-                          borderRadius: '4px'
-                        }}
-                        disabled={!!loading}
-                        onBlur={async (e) => {
-                          const val = parseInt(e.target.value, 10)
-                          const cleanQty = Math.max(1, isNaN(val) ? 1 : val)
-                          if (cleanQty !== item.quantity) {
-                            await handleQtyChange(item.id, cleanQty)
-                          } else {
-                            e.target.value = String(item.quantity)
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.currentTarget.blur()
-                          }
-                        }}
-                      />
+                    {item.item_type !== 'consultation' ? (
+                      isEditable ? (
+                        <input
+                          type="number"
+                          min="1"
+                          step="1"
+                          defaultValue={item.quantity}
+                          key={`${item.id}-${item.quantity}`}
+                          className="form-input text-mono"
+                          style={{
+                            width: '64px',
+                            padding: '4px 6px',
+                            fontSize: '12px',
+                            textAlign: 'center',
+                            background: 'var(--surface-alt)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '4px'
+                          }}
+                          disabled={!!loading}
+                          onBlur={async (e) => {
+                            const val = parseInt(e.target.value, 10)
+                            const cleanQty = Math.max(1, isNaN(val) ? 1 : val)
+                            if (cleanQty !== item.quantity) {
+                              await handleQtyChange(item.id, cleanQty)
+                            } else {
+                              e.target.value = String(item.quantity)
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.currentTarget.blur()
+                            }
+                          }}
+                        />
+                      ) : (
+                        <span className="text-mono" style={{ fontWeight: 700, fontSize: '12px' }}>{item.quantity}</span>
+                      )
                     ) : (
-                      <span className="text-mono" style={{ fontWeight: 700 }}>{item.quantity}</span>
+                      <span className="text-mono text-muted" style={{ fontSize: '12px' }}>-</span>
                     )}
                   </div>
                 </td>
-                <td className="text-mono" style={{ textAlign: 'right' }}>
+                <td className="text-mono" style={{ textAlign: 'right', fontSize: '12px' }}>
                   {isEditable && item.item_type === 'consultation' && !autoConsultationFee ? (
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <input
@@ -142,7 +146,7 @@ export default function ShoppingCart({
                         style={{
                           width: '80px',
                           padding: '3px 6px',
-                          fontSize: '13px',
+                          fontSize: '12px',
                           textAlign: 'right',
                           background: 'var(--surface-alt)',
                           border: '1px solid var(--border)',
@@ -168,7 +172,7 @@ export default function ShoppingCart({
                     <span>{Number(item.unit_price).toLocaleString()} MMK</span>
                   )}
                 </td>
-                <td className="text-mono" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent)' }}>
+                <td className="text-mono" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent)', fontSize: '12px' }}>
                   {Number(item.line_total).toLocaleString()} MMK
                 </td>
                 {isEditable && (
