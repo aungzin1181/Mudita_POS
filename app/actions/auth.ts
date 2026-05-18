@@ -7,7 +7,10 @@ import { headers }       from 'next/headers'
 import { writeAuditLog } from '@/lib/audit'
 
 // ── Login with Email + Password ──
-export async function loginWithPassword(formData: FormData) {
+export async function loginWithPassword(
+  formData: FormData,
+  deviceInfo?: { os: string; device_type: string; browser: string }
+) {
   const email    = formData.get('email') as string
   const password = formData.get('password') as string
   const headersList = await headers()
@@ -19,7 +22,15 @@ export async function loginWithPassword(formData: FormData) {
 
   // Log attempt
   await supabaseAdmin.from('login_attempts')
-    .insert({ email, ip_address: ip, success: !error, stage: 'password' })
+    .insert({
+      email,
+      ip_address:  ip,
+      success:     !error,
+      stage:       'password',
+      os:          deviceInfo?.os          ?? 'Unknown',
+      device_type: deviceInfo?.device_type ?? 'Unknown',
+      browser:     deviceInfo?.browser     ?? 'Unknown',
+    })
 
   if (error) {
     // We don't have a user ID on failure, so we can't update user_profiles.

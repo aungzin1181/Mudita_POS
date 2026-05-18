@@ -1,16 +1,24 @@
 'use client'
 
-import Image from 'next/image'
-import { loginWithPassword } from '@/app/actions/auth'
-import { useActionState } from 'react'
+import { useState }          from 'react'
+import Image                  from 'next/image'
+import { loginWithPassword }  from '@/app/actions/auth'
+import { getDeviceInfo }      from '@/lib/utils/device'
 
 export default function LoginPage() {
-  const [state, formAction, pending] = useActionState(
-    async (_prev: any, formData: FormData) => {
-      return await loginWithPassword(formData)
-    },
-    null
-  )
+  const [loginState, setLoginState] = useState<{ error?: string } | null>(null)
+  const [isPending,  setIsPending]  = useState(false)
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setIsPending(true)
+    setLoginState(null)
+    const formData   = new FormData(e.currentTarget)
+    const deviceInfo = getDeviceInfo()
+    const result     = await loginWithPassword(formData, deviceInfo)
+    setLoginState(result ?? null)
+    setIsPending(false)
+  }
 
   return (
     <div style={{
@@ -122,7 +130,7 @@ export default function LoginPage() {
             </h2>
           </div>
 
-          {state?.error && (
+          {loginState?.error && (
             <div style={{
               background: '#fde8e8',
               border: '1px solid #7b1e1e',
@@ -136,11 +144,11 @@ export default function LoginPage() {
               alignItems: 'center',
             }}>
               <span>⚠</span>
-              <span>{state.error}</span>
+              <span>{loginState.error}</span>
             </div>
           )}
 
-          <form action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
               <label style={{
                 display: 'block',
@@ -215,24 +223,24 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={pending}
+              disabled={isPending}
               style={{
                 width: '100%',
                 padding: '13px',
-                background: pending ? '#5a6272' : '#1a4f8a',
+                background: isPending ? '#5a6272' : '#1a4f8a',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 8,
                 fontFamily: "'DM Sans', sans-serif",
                 fontSize: 15,
                 fontWeight: 600,
-                cursor: pending ? 'not-allowed' : 'pointer',
+                cursor: isPending ? 'not-allowed' : 'pointer',
                 marginTop: 4,
                 transition: 'background 0.2s',
                 letterSpacing: '0.02em',
               }}
             >
-              {pending ? 'Signing in…' : 'Sign In →'}
+              {isPending ? 'Signing in…' : 'Sign In →'}
             </button>
           </form>
 
