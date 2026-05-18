@@ -195,7 +195,7 @@ export default function ShoppingCart({
                   </div>
                 </td>
                 <td className="text-mono" style={{ textAlign: 'right', fontSize: '12px' }}>
-                  {isEditable && item.item_type === 'consultation' && !autoConsultationFee ? (
+                  {isEditable && item.item_type === 'consultation' ? (
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                       <input
                         type="number"
@@ -255,7 +255,7 @@ export default function ShoppingCart({
           </tbody>
         </table>
 
-        {isEditable && !autoConsultationFee && !items.some(item => item.item_type === 'consultation') && (
+        {isEditable && !transaction?.doctor_id && !items.some(item => item.item_type === 'consultation') && (
           <div style={{
             padding: '16px',
             borderTop: '1px solid var(--border)',
