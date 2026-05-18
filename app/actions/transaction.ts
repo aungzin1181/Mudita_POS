@@ -401,14 +401,14 @@ export async function setTransactionDoctor(transactionId: string, doctorId: stri
       .from('transaction_items')
       .select('id')
       .eq('transaction_id', transactionId)
-      .eq('description', `Consultation - ${doctor.full_name}`)
+      .eq('item_type', 'consultation')
       .eq('is_removed', false)
 
     if (!existingItems || existingItems.length === 0) {
       // Add doctor's consultation fee as an item
       await addTransactionItem(transactionId, {
         item_type: 'consultation',
-        description: `Consultation - ${doctor.full_name}`,
+        description: 'Consultation',
         quantity: 1,
         unit_price: 0
       })
