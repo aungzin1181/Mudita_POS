@@ -78,8 +78,42 @@ export default async function AuditLogPage({
       userNames[p.id] = p.full_name
     }
   }
-
   const totalPages = Math.ceil((count ?? 0) / pageSize)
+
+  // Collect patient IDs and doctor IDs from JSON data
+  const patientIds = new Set<string>()
+  const doctorIds = new Set<string>()
+
+  for (const log of logs ?? []) {
+    const pd = log.previous_data || {}
+    const nd = log.new_data || {}
+    if (pd.patient_id) patientIds.add(pd.patient_id)
+    if (nd.patient_id) patientIds.add(nd.patient_id)
+    if (pd.doctor_id) doctorIds.add(pd.doctor_id)
+    if (nd.doctor_id) doctorIds.add(nd.doctor_id)
+  }
+
+  const entityNames: Record<string, string> = {}
+
+  if (patientIds.size > 0) {
+    const { data: patients } = await supabaseAdmin
+      .from('patients')
+      .select('id, full_name')
+      .in('id', Array.from(patientIds))
+    for (const p of patients ?? []) {
+      entityNames[p.id] = p.full_name
+    }
+  }
+
+  if (doctorIds.size > 0) {
+    const { data: doctors } = await supabaseAdmin
+      .from('doctors')
+      .select('id, full_name')
+      .in('id', Array.from(doctorIds))
+    for (const d of doctors ?? []) {
+      entityNames[d.id] = `Dr. ${d.full_name}`
+    }
+  }
 
   return (
     <div className="container">
@@ -120,6 +154,7 @@ export default async function AuditLogPage({
         <AuditLogTable 
           logs={logs || []} 
           userNames={userNames} 
+          entityNames={entityNames}
           MODULE_META={MODULE_META} 
           ACTION_LABELS={ACTION_LABELS} 
         />

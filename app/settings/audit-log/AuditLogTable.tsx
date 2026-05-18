@@ -6,11 +6,13 @@ import { X, Copy, Check, ArrowRight } from 'lucide-react'
 export default function AuditLogTable({
   logs,
   userNames,
+  entityNames,
   MODULE_META,
   ACTION_LABELS
 }: {
   logs: any[]
   userNames: Record<string, string>
+  entityNames: Record<string, string>
   MODULE_META: any
   ACTION_LABELS: any
 }) {
@@ -104,17 +106,24 @@ export default function AuditLogTable({
       // Skip if unchanged or if they are large objects (keep it simple)
       if (JSON.stringify(o) === JSON.stringify(n)) return null
 
+      const displayVal = (val: any) => {
+        if (val === null || val === undefined) return ''
+        if (typeof val === 'object') return JSON.stringify(val)
+        if (typeof val === 'string' && entityNames[val]) return entityNames[val]
+        return String(val)
+      }
+
       return (
         <div className="diff-row" key={key}>
           <span className="diff-label" style={{textTransform: 'capitalize'}}>{key.replace(/_/g, ' ')}:</span>
           {o !== undefined && (
             <>
-              <span className="diff-old">{typeof o === 'object' ? JSON.stringify(o) : String(o)}</span>
+              <span className="diff-old">{displayVal(o)}</span>
               <ArrowRight size={14} className="text-muted" />
             </>
           )}
           {n !== undefined && (
-            <span className="diff-new">{typeof n === 'object' ? JSON.stringify(n) : String(n)}</span>
+            <span className="diff-new">{displayVal(n)}</span>
           )}
           {n === undefined && o !== undefined && (
             <span className="diff-new" style={{color: 'var(--red)', background: 'var(--red2)'}}>Deleted</span>
