@@ -82,11 +82,22 @@ export default function PaymentPanel({ transaction, items = [] }: { transaction:
           <h3 className="text-mono" style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-muted)' }}>Bill Summary</h3>
           {transaction.status === 'paid' && (
             <button 
-              className="btn btn-sm" 
+              className="btn btn-sm btn-accent" 
               onClick={() => window.open(`/pos/transaction/${transaction.id}/print`, '_blank')}
-              style={{ padding: '2px 6px', fontSize: '10px' }}
+              style={{ 
+                padding: '4px 10px', 
+                fontSize: '11px', 
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: 'var(--accent)',
+                color: 'white',
+                border: 'none',
+                boxShadow: '0 2px 4px rgba(29, 78, 216, 0.25)'
+              }}
             >
-              <Printer size={10} /> Print
+              <Printer size={12} /> Print Receipt
             </button>
           )}
         </div>

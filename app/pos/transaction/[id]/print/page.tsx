@@ -60,6 +60,7 @@ export default async function PrintTransactionPage({ params }: { params: Promise
           font-size: 12px;
           line-height: 1.5;
           border: 1px solid #eee;
+          position: relative;
         }
         .receipt-header { text-align: center; margin-bottom: 20px; }
         .receipt-header h2 { margin: 0; font-size: 16px; font-weight: 800; line-height: 1.5; color: #0f172a; }
