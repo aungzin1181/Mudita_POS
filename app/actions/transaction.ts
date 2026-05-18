@@ -154,10 +154,26 @@ export async function markAsPaid(
 
   const { data: tx } = await supabase
     .from('transactions')
-    .select('total_amount, status')
+    .select('total_amount, status, doctor_id')
     .eq('id', transactionId).single()
 
   if (tx?.status !== 'open') throw new Error('Transaction not open')
+
+  // Enforce mandatory consultation fee if a doctor is selected
+  if (tx?.doctor_id) {
+    const { data: consultationItems } = await supabase
+      .from('transaction_items')
+      .select('unit_price')
+      .eq('transaction_id', transactionId)
+      .eq('item_type', 'consultation')
+      .eq('is_removed', false)
+
+    const zeroFeeItem = consultationItems?.find(i => Number(i.unit_price) <= 0)
+    if (!consultationItems || consultationItems.length === 0 || zeroFeeItem) {
+      throw new Error('Please set the Consultation Fee (must be greater than 0) before finalizing the transaction.')
+    }
+  }
+
   if (amountPaid < Number(tx.total_amount)) {
     throw new Error('Insufficient payment amount')
   }

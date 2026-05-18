@@ -89,7 +89,7 @@ export default async function TransactionDetailPage({ params }: { params: Promis
             doctors={(doctors || []) as Doctor[]}
             transaction={tx as Transaction}
           />
-          <PaymentPanel transaction={tx as Transaction} />
+          <PaymentPanel transaction={tx as Transaction} items={(items || []) as TransactionItem[]} />
         </div>
       </div>
     </div>

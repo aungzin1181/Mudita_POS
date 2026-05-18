@@ -214,13 +214,15 @@ export default function ShoppingCart({
                 </td>
                 {isEditable && (
                   <td style={{ textAlign: 'right' }}>
-                    <button
-                      className="btn-icon-danger"
-                      onClick={() => handleRemove(item.id)}
-                      disabled={!!loading}
-                    >
-                      {loading === item.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                    </button>
+                    {!(item.item_type === 'consultation' && transaction?.doctor_id) && (
+                      <button
+                        className="btn-icon-danger"
+                        onClick={() => handleRemove(item.id)}
+                        disabled={!!loading}
+                      >
+                        {loading === item.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                      </button>
+                    )}
                   </td>
                 )}
               </tr>

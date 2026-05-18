@@ -1,17 +1,26 @@
 'use client'
 
 import { useState } from 'react'
-import { Transaction } from '@/types/pos'
+import { Transaction, TransactionItem } from '@/types/pos'
 import { markAsPaid, voidTransaction, applyDiscount } from '@/app/actions/transaction'
 import { CheckCircle, XCircle, Tag, Banknote, Smartphone, Printer } from 'lucide-react'
 
-export default function PaymentPanel({ transaction }: { transaction: Transaction }) {
+export default function PaymentPanel({ transaction, items = [] }: { transaction: Transaction; items?: TransactionItem[] }) {
   const [loading, setLoading] = useState(false)
   const [showDiscount, setShowDiscount] = useState(false)
   const [discountAmount, setDiscountAmount] = useState('')
   const [discountReason, setDiscountReason] = useState('')
 
   const handlePay = async (method: 'cash' | 'kpay') => {
+    // Client-side validation: if a doctor is assigned, check if consultation item has been priced
+    if (transaction.doctor_id) {
+      const consultationItem = items.find(i => i.item_type === 'consultation')
+      if (!consultationItem || Number(consultationItem.unit_price) <= 0) {
+        alert('Please set the Consultation Fee (must be greater than 0) before finalizing payment.')
+        return
+      }
+    }
+
     const amount = prompt(`Enter amount paid (${method.toUpperCase()}) in MMK:`, transaction.total_amount.toString())
     if (!amount) return
 
