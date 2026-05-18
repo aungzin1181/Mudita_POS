@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { Shield, User, Package, UserCheck, Calendar, LogIn, Stethoscope } from 'lucide-react'
+import AuditLogTable from './AuditLogTable'
 
 const MODULE_META: Record<string, { label: string; color: string; icon: string }> = {
   inventory:   { label: 'Inventory',   color: '#7c3aed', icon: '📦' },
@@ -116,81 +117,12 @@ export default async function AuditLogPage({
             )}
           </div>
         </div>
-        <div className="card-body" style={{ padding: 0 }}>
-          {logs && logs.length > 0 ? (
-            <table>
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>Module</th>
-                  <th>Action</th>
-                  <th>Entity</th>
-                  <th>Performed By</th>
-                  <th>IP Address</th>
-                </tr>
-              </thead>
-              <tbody>
-                {logs.map((log) => {
-                  const meta = MODULE_META[log.module] ?? { label: log.module, color: '#64748b', icon: '•' }
-                  return (
-                    <tr key={log.id}>
-                      <td className="text-mono" style={{ fontSize: '12px', color: 'var(--ink-muted)', whiteSpace: 'nowrap' }}>
-                        {new Date(log.created_at).toLocaleDateString()}{' '}
-                        <span style={{ color: 'var(--muted)' }}>
-                          {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className="badge"
-                          style={{
-                            background: `${meta.color}18`,
-                            color: meta.color,
-                            border: `1px solid ${meta.color}30`,
-                            fontFamily: 'var(--mono)',
-                            fontSize: '10px',
-                          }}
-                        >
-                          {meta.icon} {meta.label}
-                        </span>
-                      </td>
-                      <td style={{ fontWeight: 500, fontSize: '13px' }}>
-                        {ACTION_LABELS[log.action] ?? log.action}
-                      </td>
-                      <td>
-                        <div style={{ fontWeight: 500, fontSize: '13px' }}>{log.entity_label ?? log.entity_type}</div>
-                        {log.entity_id && (
-                          <div className="text-mono text-muted" style={{ fontSize: '10px' }}>
-                            {log.entity_id.slice(0, 8)}…
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        {log.performed_by
-                          ? (
-                            <span style={{ fontWeight: 500, fontSize: '13px' }}>
-                              {userNames[log.performed_by] ?? 'Unknown'}
-                            </span>
-                          )
-                          : <span className="text-muted" style={{ fontSize: '12px' }}>System</span>
-                        }
-                      </td>
-                      <td className="text-mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
-                        {log.ip_address ?? '—'}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '60px', color: 'var(--ink-muted)' }}>
-              <Shield size={40} style={{ margin: '0 auto 16px', display: 'block', opacity: 0.3 }} />
-              <div style={{ fontWeight: 600, marginBottom: '6px' }}>No audit events found</div>
-              <div style={{ fontSize: '13px' }}>Events will appear here as actions are performed.</div>
-            </div>
-          )}
-        </div>
+        <AuditLogTable 
+          logs={logs || []} 
+          userNames={userNames} 
+          MODULE_META={MODULE_META} 
+          ACTION_LABELS={ACTION_LABELS} 
+        />
 
         {/* Pagination */}
         {totalPages > 1 && (
