@@ -377,6 +377,67 @@ export async function setTransactionDoctor(transactionId: string, doctorId: stri
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
 
+  if (!doctorId || doctorId === '') {
+    // 1. Remove doctor_id from transaction
+    const { error: updateError } = await supabase
+      .from('transactions')
+      .update({ 
+        doctor_id: null,
+        updated_by: userId,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', transactionId)
+
+    if (updateError) throw updateError
+
+    // 2. Soft-delete the consultation fee if automatic fee is enabled
+    const autoFeeSetting = await getSetting('auto_consultation_fee', 'true')
+    if (autoFeeSetting === 'true') {
+      const { data: existingItems } = await supabase
+        .from('transaction_items')
+        .select('id')
+        .eq('transaction_id', transactionId)
+        .eq('item_type', 'consultation')
+        .eq('is_removed', false)
+
+      for (const item of existingItems ?? []) {
+        await supabase
+          .from('transaction_items')
+          .update({ is_removed: true })
+          .eq('id', item.id)
+      }
+
+      // Recalculate transaction totals
+      const { data: activeItems } = await supabase
+        .from('transaction_items')
+        .select('line_total')
+        .eq('transaction_id', transactionId)
+        .eq('is_removed', false)
+
+      const { data: tx } = await supabase
+        .from('transactions')
+        .select('discount_amount')
+        .eq('id', transactionId)
+        .single()
+
+      const subtotal = activeItems?.reduce((sum, i) => sum + Number(i.line_total), 0) ?? 0
+      const total = subtotal - Number(tx?.discount_amount || 0)
+
+      await supabase
+        .from('transactions')
+        .update({ 
+          subtotal, 
+          total_amount: total, 
+          updated_by: userId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', transactionId)
+    }
+
+    revalidatePath(`/pos/transaction/${transactionId}`)
+    return { success: true }
+  }
+
   // Update transaction
   const { data: doctor } = await supabase.from('doctors').select('*').eq('id', doctorId).single()
   if (!doctor) throw new Error('Doctor not found')
@@ -399,19 +460,55 @@ export async function setTransactionDoctor(transactionId: string, doctorId: stri
     // Check if consultation fee already exists
     const { data: existingItems } = await supabase
       .from('transaction_items')
-      .select('id')
+      .select('id, is_removed')
       .eq('transaction_id', transactionId)
       .eq('item_type', 'consultation')
-      .eq('is_removed', false)
 
-    if (!existingItems || existingItems.length === 0) {
-      // Add doctor's consultation fee as an item
-      await addTransactionItem(transactionId, {
-        item_type: 'consultation',
-        description: 'Consultation',
-        quantity: 1,
-        unit_price: 0
-      })
+    const activeItem = existingItems?.find(i => !i.is_removed)
+    const inactiveItem = existingItems?.find(i => i.is_removed)
+
+    if (!activeItem) {
+      if (inactiveItem) {
+        // Reactivate soft-deleted consultation item
+        await supabase
+          .from('transaction_items')
+          .update({ is_removed: false, unit_price: 0, quantity: 1, description: 'Consultation' })
+          .eq('id', inactiveItem.id)
+      } else {
+        // Add doctor's consultation fee as an item
+        await addTransactionItem(transactionId, {
+          item_type: 'consultation',
+          description: 'Consultation',
+          quantity: 1,
+          unit_price: 0
+        })
+      }
+
+      // Recalculate transaction totals
+      const { data: activeItems } = await supabase
+        .from('transaction_items')
+        .select('line_total')
+        .eq('transaction_id', transactionId)
+        .eq('is_removed', false)
+
+      const { data: tx } = await supabase
+        .from('transactions')
+        .select('discount_amount')
+        .eq('id', transactionId)
+        .single()
+
+      const subtotal = activeItems?.reduce((sum, i) => sum + Number(i.line_total), 0) ?? 0
+      const total = subtotal - Number(tx?.discount_amount || 0)
+
+      await supabase
+        .from('transactions')
+        .update({ 
+          subtotal, 
+          total_amount: total, 
+          updated_by: userId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', transactionId)
     }
   }
 

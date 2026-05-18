@@ -15,7 +15,6 @@ export default function TransactionHeader({ transaction, patient, doctors }: Tra
   const [loading, setLoading] = useState(false)
 
   const handleDoctorChange = async (doctorId: string) => {
-    if (!doctorId) return
     setLoading(true)
     try {
       await setTransactionDoctor(transaction.id, doctorId)
