@@ -6,6 +6,7 @@ import ShoppingCart from '@/components/pos/ShoppingCart'
 import PaymentPanel from '@/components/pos/PaymentPanel'
 import TransactionHeader from '@/components/pos/TransactionHeader'
 import TransactionBackButton from './TransactionBackButton'
+import { getSetting } from '@/app/actions/settings'
 
 export default async function TransactionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -32,13 +33,17 @@ export default async function TransactionDetailPage({ params }: { params: Promis
     { data: services },
     { data: products },
     { data: doctors },
-    { data: patient }
+    { data: patient },
+    autoConsultationFeeStr
   ] = await Promise.all([
     supabase.from('services').select('*').eq('is_active', true),
     supabase.from('products').select('*').eq('is_active', true),
     supabase.from('doctors').select('*').eq('is_active', true),
-    supabase.from('patients').select('*').eq('id', tx.patient_id).single()
+    supabase.from('patients').select('*').eq('id', tx.patient_id).single(),
+    getSetting('auto_consultation_fee', 'true')
   ])
+
+  const autoConsultationFee = autoConsultationFeeStr === 'true'
 
   const isEditable = ['draft', 'open'].includes(tx.status)
 
@@ -80,6 +85,9 @@ export default async function TransactionDetailPage({ params }: { params: Promis
             transactionId={id}
             items={(items || []) as TransactionItem[]}
             isEditable={isEditable}
+            autoConsultationFee={autoConsultationFee}
+            doctors={(doctors || []) as Doctor[]}
+            transaction={tx as Transaction}
           />
           <PaymentPanel transaction={tx as Transaction} />
         </div>

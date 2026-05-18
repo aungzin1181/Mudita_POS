@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { UpdateItemPayload } from '@/types/pos'
 import { writeAuditLog, getClientIp } from '@/lib/audit'
+import { getSetting } from '@/app/actions/settings'
 
 /**
  * Update a transaction item's quantity or mark as removed.
@@ -391,22 +392,27 @@ export async function setTransactionDoctor(transactionId: string, doctorId: stri
 
   if (updateError) throw updateError
 
-  // Check if consultation fee already exists
-  const { data: existingItems } = await supabase
-    .from('transaction_items')
-    .select('id')
-    .eq('transaction_id', transactionId)
-    .eq('description', `Consultation - ${doctor.full_name}`)
-    .eq('is_removed', false)
+  // Check if automatic consultation fee is enabled
+  const autoFeeSetting = await getSetting('auto_consultation_fee', 'true')
 
-  if (!existingItems || existingItems.length === 0) {
-    // Add doctor's consultation fee as an item
-    await addTransactionItem(transactionId, {
-      item_type: 'consultation',
-      description: `Consultation - ${doctor.full_name}`,
-      quantity: 1,
-      unit_price: Number(doctor.consultation_fee) || 0
-    })
+  if (autoFeeSetting === 'true') {
+    // Check if consultation fee already exists
+    const { data: existingItems } = await supabase
+      .from('transaction_items')
+      .select('id')
+      .eq('transaction_id', transactionId)
+      .eq('description', `Consultation - ${doctor.full_name}`)
+      .eq('is_removed', false)
+
+    if (!existingItems || existingItems.length === 0) {
+      // Add doctor's consultation fee as an item
+      await addTransactionItem(transactionId, {
+        item_type: 'consultation',
+        description: `Consultation - ${doctor.full_name}`,
+        quantity: 1,
+        unit_price: Number(doctor.consultation_fee) || 0
+      })
+    }
   }
 
   revalidatePath(`/pos/transaction/${transactionId}`)

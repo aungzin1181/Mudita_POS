@@ -9,6 +9,8 @@ import {
   changeUserRole,
   adminResetPassword,
 } from '@/app/actions/user'
+import { updateSetting } from '@/app/actions/settings'
+import { Loader2 } from 'lucide-react'
 
 /* ─── Types ─────────────────────────────────────────────────── */
 type Profile = {
@@ -38,6 +40,7 @@ type Props = {
   profiles: Profile[]
   loginAttempts: LoginAttempt[]
   currentUserId: string
+  initialAutoConsultationFee: boolean
 }
 
 /* ─── Role config ────────────────────────────────────────────── */
@@ -585,9 +588,121 @@ const CLOSE_BTN: React.CSSProperties = {
   color: 'var(--ink-muted)', cursor: 'pointer', lineHeight: 1,
 }
 
+/* ─── Clinic Settings Tab ─────────────────────────────────────── */
+function ClinicSettingsTab({ initialAutoConsultationFee }: { initialAutoConsultationFee: boolean }) {
+  const [autoFee, setAutoFee] = useState(initialAutoConsultationFee)
+  const [pending, startTransition] = useTransition()
+  const [result, setResult] = useState<{ success?: boolean; error?: string } | null>(null)
+
+  const handleToggle = (value: boolean) => {
+    setAutoFee(value)
+    setResult(null)
+    startTransition(async () => {
+      const res = await updateSetting(
+        'auto_consultation_fee',
+        value ? 'true' : 'false',
+        'Toggle automatic doctor consultation fee in POS'
+      )
+      setResult(res)
+    })
+  }
+
+  return (
+    <div style={{ maxWidth: '640px' }}>
+      {result?.error   && <Alert type="error"   msg={result.error} />}
+      {result?.success && <Alert type="success" msg="Setting saved successfully!" />}
+
+      <div className="card" style={{ padding: '28px' }}>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '12px',
+            background: 'var(--accent-soft)',
+            color: 'var(--accent)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            ⚙️
+          </div>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0, marginBottom: '6px' }}>
+              Doctor Consultation Fee Mode
+            </h3>
+            <p style={{ fontSize: '13px', color: 'var(--ink-muted)', lineHeight: '1.5', margin: 0, marginBottom: '20px' }}>
+              Configure how doctor consultation fees are handled in the POS system.
+            </p>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              background: 'var(--surface-alt)',
+              padding: '16px',
+              borderRadius: '10px',
+              border: '1px solid var(--border)',
+              marginBottom: '20px'
+            }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="auto_fee"
+                  checked={autoFee === true}
+                  disabled={pending}
+                  onChange={() => handleToggle(true)}
+                  style={{ width: '16px', height: '16px', accentColor: 'var(--accent)', cursor: 'pointer' }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '14px' }}>Automatic Fee (Default)</div>
+                  <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginTop: '2px' }}>
+                    Attending doctor's consultation fee is automatically set in POS. Cashiers cannot modify or remove it.
+                  </div>
+                </div>
+              </label>
+
+              <div style={{ height: '1px', background: 'var(--border)' }}></div>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="auto_fee"
+                  checked={autoFee === false}
+                  disabled={pending}
+                  onChange={() => handleToggle(false)}
+                  style={{ width: '16px', height: '16px', accentColor: 'var(--accent)', cursor: 'pointer' }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '14px' }}>Manual Entry Mode</div>
+                  <div style={{ fontSize: '12px', color: 'var(--ink-muted)', marginTop: '2px' }}>
+                    No automatic fee is added. Cashiers can manually add, adjust pricing, edit quantities, or delete the consultation fee.
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            {pending && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--accent)', fontWeight: 500 }}>
+                <Loader2 size={14} className="animate-spin" />
+                Saving configuration changes...
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ─── Main Component ─────────────────────────────────────────── */
-export default function UserManagementClient({ profiles, loginAttempts, currentUserId }: Props) {
-  const [activeTab, setActiveTab] = useState<'users' | 'logs'>('users')
+export default function UserManagementClient({
+  profiles,
+  loginAttempts,
+  currentUserId,
+  initialAutoConsultationFee
+}: Props) {
+  const [activeTab, setActiveTab] = useState<'users' | 'logs' | 'settings'>('users')
 
   return (
     <div className="container">
@@ -604,6 +719,7 @@ export default function UserManagementClient({ profiles, loginAttempts, currentU
         {([
           { id: 'users', label: '👥 Staff Accounts' },
           { id: 'logs',  label: '🔐 Login Audit Log' },
+          { id: 'settings', label: '⚙️ POS Settings' },
         ] as const).map(t => (
           <button
             key={t.id}
@@ -632,6 +748,9 @@ export default function UserManagementClient({ profiles, loginAttempts, currentU
       )}
       {activeTab === 'logs' && (
         <LoginAttemptsTab attempts={loginAttempts} />
+      )}
+      {activeTab === 'settings' && (
+        <ClinicSettingsTab initialAutoConsultationFee={initialAutoConsultationFee} />
       )}
     </div>
   )

@@ -1,18 +1,50 @@
 'use client'
 
 import { useState } from 'react'
-import { TransactionItem } from '@/types/pos'
-import { updateTransactionItem } from '@/app/actions/transaction'
+import { TransactionItem, Doctor, Transaction } from '@/types/pos'
+import { updateTransactionItem, addTransactionItem } from '@/app/actions/transaction'
 import { Trash2, Plus, Minus, ShoppingCart as CartIcon, Loader2 } from 'lucide-react'
 
 interface ShoppingCartProps {
   transactionId: string
   items: TransactionItem[]
   isEditable: boolean
+  autoConsultationFee?: boolean
+  doctors?: Doctor[]
+  transaction?: Transaction
 }
 
-export default function ShoppingCart({ transactionId, items, isEditable }: ShoppingCartProps) {
+export default function ShoppingCart({
+  transactionId,
+  items,
+  isEditable,
+  autoConsultationFee = true,
+  doctors = [],
+  transaction
+}: ShoppingCartProps) {
   const [loading, setLoading] = useState<string | null>(null)
+  const [addingFee, setAddingFee] = useState(false)
+
+  const handleAddManualConsultation = async () => {
+    if (!transaction) return
+    setAddingFee(true)
+    try {
+      const doctor = doctors.find(d => d.id === transaction.doctor_id)
+      const desc = doctor ? `Consultation - ${doctor.full_name}` : 'Consultation Fee'
+      const price = doctor ? Number(doctor.consultation_fee) : 0
+
+      await addTransactionItem(transactionId, {
+        item_type: 'consultation',
+        description: desc,
+        quantity: 1,
+        unit_price: price
+      })
+    } catch (err: any) {
+      alert(err.message || 'Failed to add consultation fee')
+    } finally {
+      setAddingFee(false)
+    }
+  }
 
   const handleQtyChange = async (itemId: string, newQty: number) => {
     if (newQty < 1) return
@@ -63,7 +95,7 @@ export default function ShoppingCart({ transactionId, items, isEditable }: Shopp
                 </td>
                 <td>
                   <div className="flex items-center justify-center gap-2">
-                    {isEditable && item.item_type !== 'consultation' ? (
+                    {isEditable && (item.item_type !== 'consultation' || !autoConsultationFee) ? (
                       <>
                         <button className="btn-circle" onClick={() => handleQtyChange(item.id, item.quantity - 1)} disabled={!!loading}>
                           <Minus size={12} />
@@ -78,7 +110,41 @@ export default function ShoppingCart({ transactionId, items, isEditable }: Shopp
                     )}
                   </div>
                 </td>
-                <td className="text-mono" style={{ textAlign: 'right' }}>{Number(item.unit_price).toLocaleString()} MMK</td>
+                <td className="text-mono" style={{ textAlign: 'right' }}>
+                  {isEditable && item.item_type === 'consultation' && !autoConsultationFee ? (
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <input
+                        type="number"
+                        className="form-input text-mono"
+                        style={{
+                          width: '80px',
+                          padding: '3px 6px',
+                          fontSize: '13px',
+                          textAlign: 'right',
+                          background: 'var(--surface-alt)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '4px'
+                        }}
+                        defaultValue={item.unit_price}
+                        onBlur={async (e) => {
+                          const val = parseFloat(e.target.value) || 0
+                          if (val !== item.unit_price) {
+                            setLoading(item.id)
+                            try {
+                              await updateTransactionItem(transactionId, item.id, { unit_price: val })
+                            } catch (err: any) {
+                              alert(err.message)
+                            } finally {
+                              setLoading(null)
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <span>{Number(item.unit_price).toLocaleString()} MMK</span>
+                  )}
+                </td>
                 <td className="text-mono" style={{ textAlign: 'right', fontWeight: 700, color: 'var(--accent)' }}>
                   {Number(item.line_total).toLocaleString()} MMK
                 </td>
@@ -104,6 +170,27 @@ export default function ShoppingCart({ transactionId, items, isEditable }: Shopp
             )}
           </tbody>
         </table>
+
+        {isEditable && !autoConsultationFee && !items.some(item => item.item_type === 'consultation') && (
+          <div style={{
+            padding: '16px',
+            borderTop: '1px solid var(--border)',
+            display: 'flex',
+            justifyContent: 'center',
+            background: 'var(--surface-alt)'
+          }}>
+            <button
+              type="button"
+              className="btn btn-sm btn-accent"
+              onClick={handleAddManualConsultation}
+              disabled={addingFee}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
+            >
+              {addingFee ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+              Add Consultation Fee
+            </button>
+          </div>
+        )}
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `

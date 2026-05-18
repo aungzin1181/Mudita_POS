@@ -101,6 +101,7 @@ export interface TransactionItem {
 
 export interface UpdateItemPayload {
   quantity?: number;
+  unit_price?: number;
   is_removed?: boolean;
 }
 
