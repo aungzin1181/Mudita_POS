@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Appointment } from '@/types/pos'
-import { markVisitedAndOpenPOS, updateAppointmentStatus, getCalendarData, createAppointment } from '@/app/actions/appointment'
+import { markVisitedAndOpenPOS, updateAppointmentStatus, getCalendarData, createAppointment, updateAppointment } from '@/app/actions/appointment'
 import { useRouter } from 'next/navigation'
 import { Loader2, Plus, Calendar as CalendarIcon, Check, X, CreditCard, ChevronLeft, ChevronRight, User, ShoppingCart, Receipt } from 'lucide-react'
 import Link from 'next/link'
@@ -25,6 +25,7 @@ export default function AppointmentView({ initialAppointments, date, doctors, cu
   const [currentMonth, setCurrentMonth] = useState(new Date(date))
   const [calendarData, setCalendarData] = useState<Record<string, any[]>>({})
   const [showForm, setShowForm] = useState(false)
+  const [editAppt, setEditAppt] = useState<Appointment | null>(null)
 
   // Fetch calendar data when month changes
   useEffect(() => {
@@ -134,12 +135,17 @@ export default function AppointmentView({ initialAppointments, date, doctors, cu
         </button>
       </div>
       
-      {showForm && (
+      {(showForm || editAppt) && (
         <AppointmentForm 
           doctors={doctors} 
-          onClose={() => setShowForm(false)} 
+          editData={editAppt}
+          onClose={() => {
+            setShowForm(false)
+            setEditAppt(null)
+          }} 
           onSuccess={() => {
             setShowForm(false)
+            setEditAppt(null)
             router.refresh()
             // Reload calendar data for current month
             getCalendarData(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
@@ -193,6 +199,14 @@ export default function AppointmentView({ initialAppointments, date, doctors, cu
                   <>
                     <span className="badge badge-amber" style={{ width: '70px', textAlign: 'center', display: 'inline-block' }}>Pending</span>
                     <div style={{ display: 'flex', gap: '6px', marginLeft: '16px' }}>
+                      <button 
+                        className="btn btn-sm btn-ghost"
+                        style={{ borderColor: 'var(--border2)' }}
+                        onClick={() => setEditAppt(appt)}
+                        disabled={loadingApptId === appt.id}
+                      >
+                        Edit
+                      </button>
                       <button 
                         className="btn btn-sm btn-ghost" 
                         style={{ color: 'var(--green)', borderColor: 'var(--border2)' }}
@@ -296,13 +310,13 @@ export default function AppointmentView({ initialAppointments, date, doctors, cu
   )
 }
 
-function AppointmentForm({ doctors, onClose, onSuccess }: { doctors: Doctor[], onClose: () => void, onSuccess: () => void }) {
+function AppointmentForm({ doctors, onClose, onSuccess, editData }: { doctors: Doctor[], onClose: () => void, onSuccess: () => void, editData?: Appointment | null }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [patientId, setPatientId] = useState('') // Need a patient picker ideally, but for demo input ID or select
+  const [patientId, setPatientId] = useState(editData?.patient_id || '') 
 
   // We need a simple patient search for the appointment form
-  const [patientSearch, setPatientSearch] = useState('')
+  const [patientSearch, setPatientSearch] = useState(editData?.patients?.full_name || '')
   const [patients, setPatients] = useState<any[]>([])
   
   const searchPatients = async (q: string) => {
@@ -320,11 +334,17 @@ function AppointmentForm({ doctors, onClose, onSuccess }: { doctors: Doctor[], o
     const formData = new FormData(e.currentTarget)
     formData.append('patient_id', patientId)
 
-    const result = await createAppointment(formData)
+    let result;
+    if (editData?.id) {
+      result = await updateAppointment(editData.id, formData)
+    } else {
+      result = await createAppointment(formData)
+    }
+    
     setLoading(false)
 
     if (!result.success) {
-      setError(result.error ?? 'Failed to create appointment.')
+      setError(result.error ?? 'Failed to save appointment.')
     } else {
       onSuccess()
     }
@@ -333,7 +353,7 @@ function AppointmentForm({ doctors, onClose, onSuccess }: { doctors: Doctor[], o
   return (
     <div className="card" style={{ marginBottom: '24px', border: '2px solid var(--accent)' }}>
       <div className="card-header">
-         <h3 style={{ fontSize: '14px', margin: 0 }}>Create New Appointment</h3>
+         <h3 style={{ fontSize: '14px', margin: 0 }}>{editData ? 'Edit Appointment' : 'Create New Appointment'}</h3>
          <button className="btn btn-sm btn-ghost" onClick={onClose}><X size={14} /></button>
       </div>
       <div className="card-body">
@@ -368,7 +388,10 @@ function AppointmentForm({ doctors, onClose, onSuccess }: { doctors: Doctor[], o
                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'var(--surface-alt)', borderRadius: '6px', border: '1px solid var(--border)' }}>
                  <User size={14} className="text-muted" />
                  <span style={{ fontWeight: 600, fontSize: '13px' }}>{patientSearch}</span>
-                 <button type="button" onClick={() => { setPatientId(''); setPatientSearch(''); setPatients([]) }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: '12px' }}>Change</button>
+                 {/* Only allow changing patient if creating new appointment, as updating patient might be tricky if it's already an existing appointment. But if we allow it: */}
+                 {!editData && (
+                   <button type="button" onClick={() => { setPatientId(''); setPatientSearch(''); setPatients([]) }} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontSize: '12px' }}>Change</button>
+                 )}
                </div>
              )}
           </div>
@@ -376,15 +399,15 @@ function AppointmentForm({ doctors, onClose, onSuccess }: { doctors: Doctor[], o
           <div className="form-grid-3">
              <div className="form-group">
                <label className="form-label">Date</label>
-               <input name="date" type="date" className="form-input" required defaultValue={new Date().toLocaleDateString('en-CA')} />
+               <input name="date" type="date" className="form-input" required defaultValue={editData?.appointment_date || new Date().toLocaleDateString('en-CA')} />
              </div>
              <div className="form-group">
                <label className="form-label">Time</label>
-               <input name="time" type="time" className="form-input" required defaultValue="09:00" />
+               <input name="time" type="time" className="form-input" required defaultValue={editData?.appointment_time?.substring(0, 5) || "09:00"} />
              </div>
              <div className="form-group">
                <label className="form-label">Doctor</label>
-               <select name="doctor_id" className="form-input">
+               <select name="doctor_id" className="form-input" defaultValue={editData?.doctor_id || ""}>
                  <option value="">-- No specific doctor --</option>
                  {doctors.map(d => (
                    <option key={d.id} value={d.id}>Dr. {d.full_name} {d.specialization ? `(${d.specialization})` : ''}</option>
@@ -395,12 +418,12 @@ function AppointmentForm({ doctors, onClose, onSuccess }: { doctors: Doctor[], o
           
           <div className="form-group mt-3">
             <label className="form-label">Reason for Visit</label>
-            <input name="reason" type="text" className="form-input" placeholder="e.g. Follow-up, Fever, Checkup" required />
+            <input name="reason" type="text" className="form-input" placeholder="e.g. Follow-up, Fever, Checkup" required defaultValue={editData?.reason || ''} />
           </div>
 
           <div className="flex gap-2 mt-4">
              <button type="submit" className="btn btn-primary" disabled={loading || !patientId}>
-               {loading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Create Appointment
+               {loading ? <Loader2 size={14} className="animate-spin" /> : (editData ? <Check size={14} /> : <Plus size={14} />)} {editData ? 'Save Changes' : 'Create Appointment'}
              </button>
              <button type="button" className="btn btn-ghost" onClick={onClose} disabled={loading}>Cancel</button>
           </div>

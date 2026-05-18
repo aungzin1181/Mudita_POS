@@ -66,6 +66,92 @@ export async function createAppointment(formData: FormData): Promise<Appointment
   }
 }
 
+export async function updateAppointment(appointmentId: string, formData: FormData): Promise<AppointmentResult> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    const doctor_id = formData.get('doctor_id') ? (formData.get('doctor_id') as string) : null;
+    const appointment_date = formData.get('date') as string;
+    const appointment_time = formData.get('time') as string;
+    const reason = formData.get('reason') as string;
+
+    // Doctor schedule conflict check
+    if (doctor_id) {
+      const { count } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .eq('doctor_id', doctor_id)
+        .eq('appointment_date', appointment_date)
+        .eq('appointment_time', appointment_time)
+        .neq('status', 'cancelled')
+        .neq('id', appointmentId);
+
+      if (count && count > 0) {
+        return { success: false, error: friendlyAppointmentError('doctor already has appointment') }
+      }
+    }
+
+    // Patient duplicate check (same day)
+    const patient_id = formData.get('patient_id') as string;
+    if (patient_id) {
+      const { count: pCount } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .eq('patient_id', patient_id)
+        .eq('appointment_date', appointment_date)
+        .neq('status', 'cancelled')
+        .neq('id', appointmentId);
+
+      if (pCount && pCount > 0) {
+        return { success: false, error: friendlyAppointmentError('patient already has appointment') }
+      }
+    }
+
+    const { data: appt, error: fetchErr } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('id', appointmentId)
+      .single()
+
+    if (fetchErr || !appt) return { success: false, error: 'Appointment not found' }
+
+    const { error: updateErr } = await supabase
+      .from('appointments')
+      .update({
+        doctor_id,
+        appointment_date,
+        appointment_time,
+        reason
+      })
+      .eq('id', appointmentId)
+
+    if (updateErr) {
+      return { success: false, error: friendlyAppointmentError(updateErr.message) }
+    }
+
+    await writeAuditLog({
+      performed_by: user?.id ?? null,
+      module: 'appointment',
+      action: 'appointment_updated',
+      entity_type: 'appointment',
+      entity_id: appointmentId,
+      previous_data: appt,
+      new_data: {
+        doctor_id,
+        appointment_date,
+        appointment_time,
+        reason,
+      } as Record<string, unknown>,
+    })
+
+    revalidatePath('/', 'layout')
+    return { success: true, appointment_id: appointmentId }
+  } catch (e: any) {
+    return { success: false, error: friendlyAppointmentError(e.message ?? 'Something went wrong') }
+  }
+}
+
 export async function markVisitedAndOpenPOS(appointmentId: string) {
   const supabase = await createClient()
 
