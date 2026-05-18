@@ -410,7 +410,7 @@ export async function setTransactionDoctor(transactionId: string, doctorId: stri
         item_type: 'consultation',
         description: `Consultation - ${doctor.full_name}`,
         quantity: 1,
-        unit_price: Number(doctor.consultation_fee) || 0
+        unit_price: 0
       })
     }
   }

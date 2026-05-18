@@ -31,7 +31,7 @@ export default function ShoppingCart({
     try {
       const doctor = doctors.find(d => d.id === transaction.doctor_id)
       const desc = doctor ? `Consultation - ${doctor.full_name}` : 'Consultation Fee'
-      const price = doctor ? Number(doctor.consultation_fee) : 0
+      const price = 0
 
       await addTransactionItem(transactionId, {
         item_type: 'consultation',
@@ -88,7 +88,7 @@ export default function ShoppingCart({
             {items.map(item => (
               <tr key={item.id}>
                 <td>
-                  <div style={{ fontWeight: 600, fontSize: '12px' }}>{item.description}</div>
+                  <div style={{ fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap' }}>{item.description}</div>
                   <div className="text-mono text-muted" style={{ fontSize: '9px', textTransform: 'uppercase' }}>
                     {item.item_type}
                   </div>
@@ -133,7 +133,7 @@ export default function ShoppingCart({
                         <span className="text-mono" style={{ fontWeight: 700, fontSize: '12px' }}>{item.quantity}</span>
                       )
                     ) : (
-                      <span className="text-mono text-muted" style={{ fontSize: '12px' }}>-</span>
+                      <span className="text-mono text-muted" style={{ fontSize: '12px' }}></span>
                     )}
                   </div>
                 </td>
