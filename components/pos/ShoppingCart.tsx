@@ -98,38 +98,94 @@ export default function ShoppingCart({
                   <div className="flex items-center justify-center">
                     {item.item_type !== 'consultation' ? (
                       isEditable ? (
-                        <input
-                          type="number"
-                          min="1"
-                          step="1"
-                          defaultValue={item.quantity}
-                          key={`${item.id}-${item.quantity}`}
-                          className="form-input text-mono"
-                          style={{
-                            width: '64px',
-                            padding: '4px 6px',
-                            fontSize: '12px',
-                            textAlign: 'center',
+                        <div 
+                          className="flex items-center" 
+                          style={{ 
+                            border: '1px solid var(--border)', 
+                            borderRadius: '6px', 
                             background: 'var(--surface-alt)',
-                            border: '1px solid var(--border)',
-                            borderRadius: '4px'
+                            height: '26px',
+                            overflow: 'hidden'
                           }}
-                          disabled={!!loading}
-                          onBlur={async (e) => {
-                            const val = parseInt(e.target.value, 10)
-                            const cleanQty = Math.max(1, isNaN(val) ? 1 : val)
-                            if (cleanQty !== item.quantity) {
-                              await handleQtyChange(item.id, cleanQty)
-                            } else {
-                              e.target.value = String(item.quantity)
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.currentTarget.blur()
-                            }
-                          }}
-                        />
+                        >
+                          <button
+                            type="button"
+                            className="btn-qty"
+                            disabled={!!loading || item.quantity <= 1}
+                            onClick={() => handleQtyChange(item.id, item.quantity - 1)}
+                            style={{
+                              width: '24px',
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--ink-muted)',
+                              cursor: item.quantity <= 1 ? 'not-allowed' : 'pointer',
+                              padding: 0
+                            }}
+                          >
+                            <Minus size={11} />
+                          </button>
+                          
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            defaultValue={item.quantity}
+                            key={`${item.id}-${item.quantity}`}
+                            className="text-mono"
+                            style={{
+                              width: '32px',
+                              height: '100%',
+                              padding: 0,
+                              fontSize: '12px',
+                              textAlign: 'center',
+                              background: 'none',
+                              border: 'none',
+                              outline: 'none',
+                              fontWeight: 600,
+                              color: 'var(--ink)'
+                            }}
+                            disabled={!!loading}
+                            onBlur={async (e) => {
+                              const val = parseInt(e.target.value, 10)
+                              const cleanQty = Math.max(1, isNaN(val) ? 1 : val)
+                              if (cleanQty !== item.quantity) {
+                                await handleQtyChange(item.id, cleanQty)
+                              } else {
+                                e.target.value = String(item.quantity)
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.currentTarget.blur()
+                              }
+                            }}
+                          />
+
+                          <button
+                            type="button"
+                            className="btn-qty"
+                            disabled={!!loading}
+                            onClick={() => handleQtyChange(item.id, item.quantity + 1)}
+                            style={{
+                              width: '24px',
+                              height: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: 'none',
+                              border: 'none',
+                              color: 'var(--ink-muted)',
+                              cursor: 'pointer',
+                              padding: 0
+                            }}
+                          >
+                            <Plus size={11} />
+                          </button>
+                        </div>
                       ) : (
                         <span className="text-mono" style={{ fontWeight: 700, fontSize: '12px' }}>{item.quantity}</span>
                       )
@@ -234,6 +290,9 @@ export default function ShoppingCart({
         }
         .btn-icon-danger { background: none; border: none; color: var(--red); opacity: 0.5; cursor: pointer; transition: opacity 0.2s; }
         .btn-icon-danger:hover { opacity: 1; }
+        .btn-qty { transition: all 0.15s ease-in-out; }
+        .btn-qty:hover { background: var(--border-soft) !important; color: var(--ink) !important; }
+        .btn-qty:active { background: var(--border) !important; }
       `}} />
     </div>
   )
