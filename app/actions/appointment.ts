@@ -44,12 +44,19 @@ export async function createAppointment(formData: FormData): Promise<Appointment
       return { success: false, error: friendlyAppointmentError(data?.error ?? 'Unknown error') }
     }
 
+    const { data: patientData } = await supabase
+      .from('patients')
+      .select('full_name')
+      .eq('id', formData.get('patient_id') as string)
+      .single()
+
     await writeAuditLog({
       performed_by: user?.id ?? null,
       module: 'appointment',
       action: 'appointment_created',
       entity_type: 'appointment',
       entity_id: data.appointment_id,
+      entity_label: patientData?.full_name ?? 'Appointment',
       new_data: {
         patient_id: formData.get('patient_id'),
         doctor_id:  formData.get('doctor_id'),
@@ -110,7 +117,7 @@ export async function updateAppointment(appointmentId: string, formData: FormDat
 
     const { data: appt, error: fetchErr } = await supabase
       .from('appointments')
-      .select('*')
+      .select('*, patients(full_name)')
       .eq('id', appointmentId)
       .single()
 
@@ -136,6 +143,7 @@ export async function updateAppointment(appointmentId: string, formData: FormDat
       action: 'appointment_updated',
       entity_type: 'appointment',
       entity_id: appointmentId,
+      entity_label: (appt as any)?.patients?.full_name ?? 'Appointment',
       previous_data: appt,
       new_data: {
         doctor_id,
@@ -242,6 +250,7 @@ export async function updateAppointmentStatus(
     action: 'status_changed',
     entity_type: 'appointment',
     entity_id: appointmentId,
+    entity_label: (appt as any)?.patients?.full_name ?? 'Appointment',
     previous_data: { status: (appt as any)?.status },
     new_data: { status, notes: notes ?? null },
   })
