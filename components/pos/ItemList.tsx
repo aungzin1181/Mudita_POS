@@ -68,7 +68,7 @@ export default function ItemList({ transactionId, isEditable, services, products
           <input
             type="text"
             className="form-input"
-            style={{ paddingLeft: '32px', padding: '4px 8px', fontSize: '12px' }}
+            style={{ padding: '4px 8px 4px 32px', fontSize: '12px' }}
             placeholder="Search products..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
