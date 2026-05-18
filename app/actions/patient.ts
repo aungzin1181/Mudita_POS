@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { writeAuditLog } from '@/lib/audit'
+import { writeAuditLog, getClientIp } from '@/lib/audit'
 
 export interface PatientFormData {
   full_name: string
@@ -37,6 +37,7 @@ export async function createPatient(data: PatientFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const { data: patient, error } = await supabase
     .from('patients')
@@ -69,6 +70,7 @@ export async function createPatient(data: PatientFormData) {
     entity_id: patient.id,
     entity_label: data.full_name,
     new_data: { ...data } as unknown as Record<string, unknown>,
+    ip_address: ip,
   })
 
   revalidatePath('/patients')
@@ -82,6 +84,7 @@ export async function updatePatient(id: string, data: PatientFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   // Capture previous state
   const { data: before } = await supabase
@@ -120,6 +123,7 @@ export async function updatePatient(id: string, data: PatientFormData) {
     entity_label: data.full_name,
     previous_data: before as unknown as Record<string, unknown>,
     new_data: { ...data } as unknown as Record<string, unknown>,
+    ip_address: ip,
   })
 
   revalidatePath('/patients')
@@ -134,6 +138,7 @@ export async function recordVitals(data: VitalsFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   // 1. Insert into historical tracking table (now with recorded_by)
   const { data: record, error: insertError } = await supabase
@@ -179,6 +184,7 @@ export async function recordVitals(data: VitalsFormData) {
     entity_type: 'patient',
     entity_id: data.patient_id,
     new_data: { ...data } as unknown as Record<string, unknown>,
+    ip_address: ip,
   })
 
   revalidatePath(`/patients/${data.patient_id}`)
@@ -192,6 +198,7 @@ export async function deletePatient(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   // Capture record before deletion
   const { data: before } = await supabase
@@ -211,6 +218,7 @@ export async function deletePatient(id: string) {
     entity_id: id,
     entity_label: before?.full_name ?? id,
     previous_data: before as unknown as Record<string, unknown>,
+    ip_address: ip,
   })
 
   revalidatePath('/patients')

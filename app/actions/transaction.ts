@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { UpdateItemPayload } from '@/types/pos'
-import { writeAuditLog } from '@/lib/audit'
+import { writeAuditLog, getClientIp } from '@/lib/audit'
 
 /**
  * Update a transaction item's quantity or mark as removed.
@@ -16,6 +16,7 @@ export async function updateTransactionItem(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const { data: tx } = await supabase
     .from('transactions')
@@ -71,6 +72,7 @@ export async function updateTransactionItem(
     entity_label: `Item: ${oldItem?.description || itemId}`,
     previous_data: oldItem,
     new_data: { ...oldItem, ...payload },
+    ip_address: ip,
   })
 
   revalidatePath(`/pos/transaction/${transactionId}`)
@@ -88,6 +90,7 @@ export async function applyDiscount(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const { data: profile } = await supabase
     .from('user_profiles').select('role').eq('id', userId ?? '').single()
@@ -127,6 +130,7 @@ export async function applyDiscount(
     entity_id: transactionId,
     entity_label: `Discount: ${discountAmount}`,
     new_data: { discount_amount: discountAmount, reason },
+    ip_address: ip,
   })
 
   revalidatePath(`/pos/transaction/${transactionId}`)
@@ -145,6 +149,7 @@ export async function markAsPaid(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const { data: tx } = await supabase
     .from('transactions')
@@ -176,6 +181,7 @@ export async function markAsPaid(
     entity_id: transactionId,
     entity_label: `Paid: ${amountPaid}`,
     new_data: { amount_paid: amountPaid, change, paymentMethod },
+    ip_address: ip,
   })
 
   revalidatePath(`/pos/transaction/${transactionId}`)
@@ -192,6 +198,7 @@ export async function voidTransaction(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const { data: profile } = await supabase
     .from('user_profiles').select('role').eq('id', userId ?? '').single()
@@ -238,6 +245,7 @@ export async function voidTransaction(
     entity_id: transactionId,
     entity_label: `Voided: ${reason}`,
     new_data: { reason },
+    ip_address: ip,
   })
 
   revalidatePath(`/pos/transaction/${transactionId}`)
@@ -251,6 +259,7 @@ export async function createTransaction(patientId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const invoiceNo = `INV-${Date.now().toString().slice(-8)}`
 
@@ -277,6 +286,7 @@ export async function createTransaction(patientId: string) {
     entity_type: 'transaction',
     entity_id: tx.id,
     entity_label: invoiceNo,
+    ip_address: ip,
   })
 
   revalidatePath('/pos')
@@ -300,6 +310,7 @@ export async function addTransactionItem(
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const { data: tx } = await supabase
     .from('transactions')
@@ -349,7 +360,8 @@ export async function addTransactionItem(
     entity_type: 'transaction',
     entity_id: transactionId,
     entity_label: `Item: ${payload.description}`,
-    new_data: item
+    new_data: item,
+    ip_address: ip,
   })
 
   revalidatePath(`/pos/transaction/${transactionId}`)

@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { writeAuditLog } from '@/lib/audit'
+import { writeAuditLog, getClientIp } from '@/lib/audit'
 
 export interface ProductFormData {
   name: string
@@ -36,6 +36,7 @@ export async function createProduct(data: ProductFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const { data: product, error } = await supabase
     .from('products')
@@ -76,6 +77,7 @@ export async function createProduct(data: ProductFormData) {
     entity_id: product.id,
     entity_label: `${data.name} (${data.sku})`,
     new_data: data as unknown as Record<string, unknown>,
+    ip_address: ip,
   })
 
   revalidatePath('/inventory')
@@ -89,6 +91,7 @@ export async function updateProduct(id: string, data: Partial<ProductFormData>) 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   // Capture previous state for the audit trail
   const { data: before } = await supabase
@@ -118,6 +121,7 @@ export async function updateProduct(id: string, data: Partial<ProductFormData>) 
     entity_label: before?.name ? `${before.name} (${before.sku})` : id,
     previous_data: before as unknown as Record<string, unknown>,
     new_data: data as unknown as Record<string, unknown>,
+    ip_address: ip,
   })
 
   revalidatePath('/inventory')
@@ -131,6 +135,7 @@ export async function adjustStock(productId: string, delta: number) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const { data: product } = await supabase
     .from('products')
@@ -157,6 +162,7 @@ export async function adjustStock(productId: string, delta: number) {
     entity_label: product?.name ? `${product.name} (${product.sku})` : productId,
     previous_data: { stock_qty: oldQty },
     new_data: { stock_qty: newQty, delta },
+    ip_address: ip,
   })
 
   revalidatePath('/inventory')

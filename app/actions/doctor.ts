@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { writeAuditLog } from '@/lib/audit'
+import { writeAuditLog, getClientIp } from '@/lib/audit'
 
 export interface DoctorFormData {
   full_name: string
@@ -21,6 +21,7 @@ export async function createDoctor(data: DoctorFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   const { data: doctor, error } = await supabase
     .from('doctors')
@@ -49,6 +50,7 @@ export async function createDoctor(data: DoctorFormData) {
     entity_id: doctor.id,
     entity_label: data.full_name,
     new_data: { ...data } as unknown as Record<string, unknown>,
+    ip_address: ip,
   })
 
   revalidatePath('/doctors')
@@ -62,6 +64,7 @@ export async function updateDoctor(id: string, data: DoctorFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   const userId = user?.id ?? null
+  const ip = await getClientIp()
 
   // Capture previous state — fee changes are particularly important
   const { data: before } = await supabase
@@ -101,6 +104,7 @@ export async function updateDoctor(id: string, data: DoctorFormData) {
     entity_label: data.full_name,
     previous_data: before as unknown as Record<string, unknown>,
     new_data: { ...data } as unknown as Record<string, unknown>,
+    ip_address: ip,
   })
 
   revalidatePath('/doctors')

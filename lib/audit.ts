@@ -5,6 +5,23 @@
  * Never throws — logging failures must never break the main action flow.
  */
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { headers } from 'next/headers'
+
+/**
+ * Read the client IP from request headers (works in Server Actions & Route Handlers).
+ * Checks x-forwarded-for first (proxy chains), then x-real-ip, falls back to null.
+ * Never throws — called from within audit helpers that are already non-fatal.
+ */
+export async function getClientIp(): Promise<string | null> {
+  try {
+    const h = await headers()
+    const forwarded = h.get('x-forwarded-for')
+    if (forwarded) return forwarded.split(',')[0].trim()
+    return h.get('x-real-ip') ?? null
+  } catch {
+    return null
+  }
+}
 
 export interface AuditEntry {
   performed_by?: string | null

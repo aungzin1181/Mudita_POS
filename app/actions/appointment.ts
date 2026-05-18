@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { writeAuditLog } from '@/lib/audit'
+import { writeAuditLog, getClientIp } from '@/lib/audit'
 
 type AppointmentResult = { success: boolean; error?: string; appointment_id?: string }
 
@@ -27,7 +27,7 @@ export async function createAppointment(formData: FormData): Promise<Appointment
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    void user
+    const ip = await getClientIp()
 
     const { data, error } = await supabase.rpc('create_appointment', {
       p_patient_id:       formData.get('patient_id') as string,
@@ -64,6 +64,7 @@ export async function createAppointment(formData: FormData): Promise<Appointment
         time:       formData.get('time'),
         reason:     formData.get('reason'),
       } as Record<string, unknown>,
+      ip_address: ip,
     })
 
     revalidatePath('/', 'layout')
@@ -77,6 +78,7 @@ export async function updateAppointment(appointmentId: string, formData: FormDat
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+    const ip = await getClientIp()
     
     const doctor_id = formData.get('doctor_id') ? (formData.get('doctor_id') as string) : null;
     const appointment_date = formData.get('date') as string;
@@ -151,6 +153,7 @@ export async function updateAppointment(appointmentId: string, formData: FormDat
         appointment_time,
         reason,
       } as Record<string, unknown>,
+      ip_address: ip,
     })
 
     revalidatePath('/', 'layout')
@@ -228,6 +231,7 @@ export async function updateAppointmentStatus(
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const ip = await getClientIp()
   void user
 
   const { data: appt } = await supabase
@@ -253,6 +257,7 @@ export async function updateAppointmentStatus(
     entity_label: (appt as any)?.patients?.full_name ?? 'Appointment',
     previous_data: { status: (appt as any)?.status },
     new_data: { status, notes: notes ?? null },
+    ip_address: ip,
   })
 
   revalidatePath('/appointments')
