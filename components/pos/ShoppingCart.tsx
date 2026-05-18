@@ -23,27 +23,7 @@ export default function ShoppingCart({
   transaction
 }: ShoppingCartProps) {
   const [loading, setLoading] = useState<string | null>(null)
-  const [addingFee, setAddingFee] = useState(false)
 
-  const handleAddManualConsultation = async () => {
-    if (!transaction) return
-    setAddingFee(true)
-    try {
-      const desc = 'Consultation'
-      const price = 0
-
-      await addTransactionItem(transactionId, {
-        item_type: 'consultation',
-        description: desc,
-        quantity: 1,
-        unit_price: price
-      })
-    } catch (err: any) {
-      alert(err.message || 'Failed to add consultation fee')
-    } finally {
-      setAddingFee(false)
-    }
-  }
 
   const handleQtyChange = async (itemId: string, newQty: number) => {
     if (newQty < 1) return
@@ -255,26 +235,7 @@ export default function ShoppingCart({
           </tbody>
         </table>
 
-        {isEditable && !transaction?.doctor_id && !items.some(item => item.item_type === 'consultation') && (
-          <div style={{
-            padding: '16px',
-            borderTop: '1px solid var(--border)',
-            display: 'flex',
-            justifyContent: 'center',
-            background: 'var(--surface-alt)'
-          }}>
-            <button
-              type="button"
-              className="btn btn-sm btn-accent"
-              onClick={handleAddManualConsultation}
-              disabled={addingFee}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}
-            >
-              {addingFee ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
-              Add Consultation Fee
-            </button>
-          </div>
-        )}
+
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
