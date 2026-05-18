@@ -67,18 +67,18 @@ export default function ShoppingCart({
 
   return (
     <div className="card">
-      <div className="card-header">
-        <h3 className="text-mono" style={{ fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <CartIcon size={16} /> Shopping Cart
+      <div className="card-header" style={{ padding: '10px 16px' }}>
+        <h3 className="text-mono" style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <CartIcon size={14} /> Shopping Cart
         </h3>
-        <span className="badge badge-open">{items.length} items</span>
+        <span className="badge badge-open" style={{ padding: '2px 8px', fontSize: '10px' }}>{items.length} items</span>
       </div>
       <div className="card-body" style={{ padding: 0 }}>
         <table className="pos-table">
           <thead>
             <tr>
               <th>Item</th>
-              <th style={{ width: '120px', textAlign: 'center' }}>Qty</th>
+              <th style={{ width: '80px', textAlign: 'center' }}>Qty</th>
               <th style={{ width: '110px', textAlign: 'right' }}>Price</th>
               <th style={{ width: '110px', textAlign: 'right' }}>Total</th>
               {isEditable && <th style={{ width: '44px' }}></th>}
@@ -94,17 +94,40 @@ export default function ShoppingCart({
                   </div>
                 </td>
                 <td>
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center">
                     {isEditable && (item.item_type !== 'consultation' || !autoConsultationFee) ? (
-                      <>
-                        <button className="btn-circle" onClick={() => handleQtyChange(item.id, item.quantity - 1)} disabled={!!loading}>
-                          <Minus size={12} />
-                        </button>
-                        <span className="text-mono" style={{ fontSize: '14px', fontWeight: 700, width: '20px', textAlign: 'center' }}>{item.quantity}</span>
-                        <button className="btn-circle" onClick={() => handleQtyChange(item.id, item.quantity + 1)} disabled={!!loading}>
-                          <Plus size={12} />
-                        </button>
-                      </>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        defaultValue={item.quantity}
+                        key={`${item.id}-${item.quantity}`}
+                        className="form-input text-mono"
+                        style={{
+                          width: '64px',
+                          padding: '4px 6px',
+                          fontSize: '13px',
+                          textAlign: 'center',
+                          background: 'var(--surface-alt)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '4px'
+                        }}
+                        disabled={!!loading}
+                        onBlur={async (e) => {
+                          const val = parseInt(e.target.value, 10)
+                          const cleanQty = Math.max(1, isNaN(val) ? 1 : val)
+                          if (cleanQty !== item.quantity) {
+                            await handleQtyChange(item.id, cleanQty)
+                          } else {
+                            e.target.value = String(item.quantity)
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.currentTarget.blur()
+                          }
+                        }}
+                      />
                     ) : (
                       <span className="text-mono" style={{ fontWeight: 700 }}>{item.quantity}</span>
                     )}
@@ -194,15 +217,16 @@ export default function ShoppingCart({
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
-        .pos-table th { background: var(--surface-alt); padding: 10px 14px; font-size: 11px; text-transform: uppercase; color: var(--muted); }
-        .pos-table td { padding: 12px 14px; border-bottom: 1px solid var(--border); }
-        .btn-circle {
-          width: 26px; height: 26px; border-radius: 50%;
-          border: 1px solid var(--border); background: var(--surface);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; transition: all 0.1s;
+        .pos-table th { background: var(--surface-alt); padding: 8px 12px; font-size: 10px; text-transform: uppercase; color: var(--muted); }
+        .pos-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+        .pos-table input[type=number]::-webkit-outer-spin-button,
+        .pos-table input[type=number]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
         }
-        .btn-circle:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+        .pos-table input[type=number] {
+          -moz-appearance: textfield;
+        }
         .btn-icon-danger { background: none; border: none; color: var(--red); opacity: 0.5; cursor: pointer; transition: opacity 0.2s; }
         .btn-icon-danger:hover { opacity: 1; }
       `}} />
