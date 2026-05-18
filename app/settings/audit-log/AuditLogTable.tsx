@@ -106,6 +106,10 @@ export default function AuditLogTable({
       // Skip if unchanged or if they are large objects (keep it simple)
       if (JSON.stringify(o) === JSON.stringify(n)) return null
 
+      // In partial updates, missing keys in newData (undefined) mean no change, not deleted.
+      // Explicit deletions usually pass null.
+      if (n === undefined && o !== undefined) return null;
+
       const displayVal = (val: any) => {
         if (val === null || val === undefined) return ''
         if (typeof val === 'object') return JSON.stringify(val)
