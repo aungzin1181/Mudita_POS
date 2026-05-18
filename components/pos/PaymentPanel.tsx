@@ -69,15 +69,15 @@ export default function PaymentPanel({ transaction }: { transaction: Transaction
     <div className="flex flex-col gap-4">
       {/* SUMMARY CARD */}
       <div className="card">
-        <div className="card-header" style={{ padding: '10px 16px' }}>
-          <h3 className="text-mono" style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bill Summary</h3>
+        <div className="card-header" style={{ padding: '8px 12px' }}>
+          <h3 className="text-mono" style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-muted)' }}>Bill Summary</h3>
           {transaction.status === 'paid' && (
             <button 
               className="btn btn-sm" 
               onClick={() => window.open(`/pos/transaction/${transaction.id}/print`, '_blank')}
-              style={{ padding: '4px 10px', fontSize: '12px' }}
+              style={{ padding: '2px 6px', fontSize: '10px' }}
             >
-              <Printer size={12} /> Print
+              <Printer size={10} /> Print
             </button>
           )}
         </div>

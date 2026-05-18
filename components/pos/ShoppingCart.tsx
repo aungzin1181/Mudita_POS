@@ -67,11 +67,11 @@ export default function ShoppingCart({
 
   return (
     <div className="card">
-      <div className="card-header" style={{ padding: '10px 16px' }}>
-        <h3 className="text-mono" style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          <CartIcon size={14} /> Shopping Cart
+      <div className="card-header" style={{ padding: '8px 12px' }}>
+        <h3 className="text-mono" style={{ fontSize: '10px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--ink-muted)' }}>
+          <CartIcon size={12} /> Shopping Cart
         </h3>
-        <span className="badge badge-open" style={{ padding: '2px 8px', fontSize: '10px' }}>{items.length} items</span>
+        <span className="badge badge-open" style={{ padding: '2px 6px', fontSize: '9px', fontWeight: 500 }}>{items.length} items</span>
       </div>
       <div className="card-body" style={{ padding: 0 }}>
         <table className="pos-table">
