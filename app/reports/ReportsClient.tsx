@@ -16,14 +16,9 @@ export default function ReportsClient({
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('eod')
 
-  // Helpers
+  // We use native form action instead of handleDateApply to ensure robust server-side re-fetching
   const handleDateApply = (e: React.FormEvent) => {
-    e.preventDefault()
-    const form = e.target as HTMLFormElement
-    const formData = new FormData(form)
-    const from = formData.get('from')
-    const to = formData.get('to')
-    router.push(`/reports?from=${from}&to=${to}`)
+    // keeping for backward compatibility if needed, but native form is better
   }
 
   const switchReport = (id: string) => {
@@ -58,7 +53,7 @@ export default function ReportsClient({
       {/* ══════════════ 1. EOD REPORT ══════════════ */}
       {activeTab === 'eod' && (
         <section className="report-section active">
-          <form className="filter-bar" onSubmit={handleDateApply}>
+          <form className="filter-bar" action="/reports" method="GET">
             <span className="filter-label">Date Range</span>
             <input className="filter-input" name="from" type="date" defaultValue={dateFrom} />
             <span className="filter-sep">to</span>
@@ -75,19 +70,19 @@ export default function ReportsClient({
               <div className="kpi-sub">{eodData.paidCount} paid transactions</div>
             </div>
             <div className="kpi-card green">
-              <div className="kpi-label">Avg. Ticket</div>
-              <div className="kpi-value">{eodData.avgTicket.toLocaleString()} MMK</div>
-              <div className="kpi-sub">Per paid transaction</div>
+              <div className="kpi-label">Doctor Fees</div>
+              <div className="kpi-value">{eodData.doctorFees?.toLocaleString() ?? 0} MMK</div>
+              <div className="kpi-sub">Total consultation income</div>
             </div>
             <div className="kpi-card amber">
-              <div className="kpi-label">Total Discounts</div>
-              <div className="kpi-value">{eodData.totalDiscount.toLocaleString()} MMK</div>
-              <div className="kpi-sub">{eodData.discountPct}% of gross</div>
+              <div className="kpi-label">Profit on Products</div>
+              <div className="kpi-value">{eodData.productProfit?.toLocaleString() ?? 0} MMK</div>
+              <div className="kpi-sub">Calculated from buying price</div>
             </div>
-            <div className="kpi-card red">
-              <div className="kpi-label">Voided Transactions</div>
-              <div className="kpi-value">{eodData.voidedCount}</div>
-              <div className="kpi-sub">{eodData.pendingCount} still pending</div>
+            <div className="kpi-card purple">
+              <div className="kpi-label">Pharmacy Revenue</div>
+              <div className="kpi-value">{eodData.pharmacyRevenue?.toLocaleString() ?? 0} MMK</div>
+              <div className="kpi-sub">Product sales only</div>
             </div>
           </div>
 
@@ -200,13 +195,14 @@ export default function ReportsClient({
       {/* ══════════════ 2. DAILY INCOME + PROFIT ══════════════ */}
       {activeTab === 'profit' && (
         <section className="report-section active">
-          <form className="filter-bar" onSubmit={handleDateApply}>
+          <form className="filter-bar" action="/reports" method="GET">
+            <input type="hidden" name="tab" value="profit" />
             <span className="filter-label">Date Range</span>
             <input className="filter-input" name="from" type="date" defaultValue={dateFrom} />
             <span className="filter-sep">to</span>
             <input className="filter-input" name="to" type="date" defaultValue={dateTo} />
             <button className="btn-apply" type="submit">Apply</button>
-            <Link href="/reports" className="btn-reset">Reset</Link>
+            <Link href="/reports?tab=profit" className="btn-reset">Reset</Link>
           </form>
 
           {/* KPIs */}

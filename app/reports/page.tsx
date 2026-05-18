@@ -9,13 +9,27 @@ export default async function ReportsPage({
   const supabase = await createClient()
   const { from, to } = await searchParams
 
-  // Default: last 30 days
-  const toDate = to ? new Date(to) : new Date()
-  const fromDate = from ? new Date(from) : new Date(Date.now() - 30 * 86400000)
+  const now = new Date()
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
+  
+  // Extract YYYY-MM-DD in local time by padding
+  const getLocalYYYYMMDD = (d: Date) => {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+  }
 
-  toDate.setHours(23, 59, 59, 999)
-  fromDate.setHours(0, 0, 0, 0)
+  const fromStr = from || getLocalYYYYMMDD(thirtyDaysAgo)
+  const toStr = to || getLocalYYYYMMDD(now)
 
+  // Use the strings to construct a UTC timezone aligned boundary
+  // Note: For a POS, usually you'd want local timezone boundaries. 
+  // We'll append Z but technically this queries UTC boundaries.
+  // Supabase stores as TIMESTAMPTZ.
+  // To get exactly start of day local time, we should append the local offset, but for simplicity we'll append T00:00:00+06:30 if we know it's Myanmar, 
+  // but let's stick to UTC for now or the timezone offset from the server.
+  // Actually, string `2026-05-18T00:00:00.000Z` is UTC. Let's just use it as it was before, but avoid `new Date` shifting.
+  const fromDate = new Date(`${fromStr}T00:00:00`)
+  const toDate = new Date(`${toStr}T23:59:59`)
+  
   const fromISO = fromDate.toISOString()
   const toISO = toDate.toISOString()
 
@@ -28,26 +42,7 @@ export default async function ReportsPage({
     .neq('status', 'draft')
     .order('created_at', { ascending: false })
 
-  // 2. Transaction items in range (for profit calculation and top items)
-  // We need to join products to get buying_price
-  const { data: txItems } = await supabase
-    .from('transaction_items')
-    .select(`
-      description, 
-      item_type, 
-      quantity, 
-      unit_price, 
-      line_total, 
-      product_id,
-      products ( buying_price, generic_name )
-    `)
-    .eq('is_removed', false)
-    // Supabase JS doesn't support easy filtering on joined table from a parent date, 
-    // but we can just fetch items from paid transactions
-    // Actually, let's just fetch all items and we'll process top ones.
-    // Ideally we'd join transactions to filter by date, but since we can't easily do inner joins with filters in PostgREST without a view,
-    // we will fetch the transactions first and then their items.
-  
+  // 2. Transaction items in range
   const paidTxIds = (txData || []).filter(t => t.status === 'paid').map(t => t.id)
   
   let validItems: any[] = []
@@ -85,19 +80,29 @@ export default async function ReportsPage({
 
   // ─── EOD PROCESSING ────────────────────────────
   const paid = txData?.filter((t) => t.status === 'paid') ?? []
-  const voided = txData?.filter((t) => t.status === 'voided') ?? []
-  const pending = txData?.filter((t) => t.status === 'open') ?? []
-
+  
   const totalRevenue = paid.reduce((s, t) => s + Number(t.total_amount), 0)
-  const totalDiscount = paid.reduce((s, t) => s + Number(t.discount_amount), 0)
-  const avgTicket = paid.length > 0 ? totalRevenue / paid.length : 0
 
   const cashRev = paid.filter((t) => t.payment_method === 'cash').reduce((s, t) => s + Number(t.total_amount), 0)
   const kpayRev = paid.filter((t) => t.payment_method === 'kpay').reduce((s, t) => s + Number(t.total_amount), 0)
 
   const cashPct = totalRevenue > 0 ? ((cashRev / totalRevenue) * 100).toFixed(1) : '0'
   const kpayPct = totalRevenue > 0 ? ((kpayRev / totalRevenue) * 100).toFixed(1) : '0'
-  const discountPct = (totalRevenue + totalDiscount) > 0 ? ((totalDiscount / (totalRevenue + totalDiscount)) * 100).toFixed(1) : '0'
+
+  // NEW KPIs
+  const doctorFees = validItems
+    .filter(i => i.item_type === 'consultation')
+    .reduce((s, i) => s + Number(i.line_total), 0)
+
+  const pharmacyRevenue = validItems
+    .filter(i => i.item_type === 'medication' || i.product_id !== null)
+    .reduce((s, i) => s + Number(i.line_total), 0)
+
+  const pharmacyCost = validItems
+    .filter(i => i.item_type === 'medication' || i.product_id !== null)
+    .reduce((s, i) => s + (Number(i.products?.buying_price || 0) * Number(i.quantity)), 0)
+
+  const productProfit = pharmacyRevenue - pharmacyCost
 
   const dailyMap: Record<string, { rev: number, pft: number }> = {}
   for (let i = 13; i >= 0; i--) {
@@ -188,15 +193,12 @@ export default async function ReportsPage({
     ]
   }
 
-  // Final Data Structures
   const eodProps = {
     totalRevenue,
     paidCount: paid.length,
-    avgTicket,
-    totalDiscount,
-    discountPct,
-    voidedCount: voided.length,
-    pendingCount: pending.length,
+    doctorFees,
+    productProfit,
+    pharmacyRevenue,
     daily: dailyEOD,
     topItems,
     cashRev,
