@@ -40,6 +40,32 @@ export default function AuditLogTable({
     }
 
     // Specific formatting per action type
+    if (log.action === 'login') {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="diff-row">
+            <span className="diff-label">OS:</span>
+            <span className="diff-new" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              {newData.os === 'Windows' && '🪟'}
+              {newData.os === 'macOS' && '🍎'}
+              {newData.os === 'iOS' && '📱'}
+              {newData.os === 'Android' && '🤖'}
+              {newData.os === 'Linux' && '🐧'}
+              {newData.os || 'Unknown'}
+            </span>
+          </div>
+          <div className="diff-row">
+            <span className="diff-label">Device:</span>
+            <span className="diff-new">{newData.device_type || 'Unknown'}</span>
+          </div>
+          <div className="diff-row">
+            <span className="diff-label">Browser:</span>
+            <span className="diff-new">{newData.browser || 'Unknown'}</span>
+          </div>
+        </div>
+      )
+    }
+
     if (log.action === 'role_changed') {
       return (
         <div className="diff-row">

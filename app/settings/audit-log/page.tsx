@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { Shield, User, Package, UserCheck, Calendar, LogIn, Stethoscope } from 'lucide-react'
 import AuditLogTable from './AuditLogTable'
+import DateFilter from './DateFilter'
 
 const MODULE_META: Record<string, { label: string; color: string; icon: string }> = {
   inventory:   { label: 'Inventory',   color: '#7c3aed', icon: '📦' },
@@ -46,23 +47,53 @@ const ACTION_LABELS: Record<string, string> = {
 export default async function AuditLogPage({
   searchParams,
 }: {
-  searchParams: Promise<{ module?: string; page?: string }>
+  searchParams: Promise<{ module?: string; page?: string; period?: string; from?: string; to?: string }>
 }) {
   const supabase = await createClient()
-  const { module: moduleFilter, page } = await searchParams
+  const { module: moduleFilter, page, period, from, to } = await searchParams
   const currentPage = parseInt(page ?? '1', 10)
   const pageSize = 50
   const offset = (currentPage - 1) * pageSize
+
+  let startIso: string | null = null
+  let endIso: string | null = null
+
+  if (period === 'today') {
+    const d = new Date().toLocaleDateString('en-CA')
+    startIso = new Date(d + 'T00:00:00').toISOString()
+    endIso = new Date(d + 'T23:59:59.999').toISOString()
+  } else if (period === 'week') {
+    const d = new Date()
+    d.setDate(d.getDate() - d.getDay()) // Sunday
+    startIso = new Date(d.toLocaleDateString('en-CA') + 'T00:00:00').toISOString()
+    endIso = new Date(new Date().toLocaleDateString('en-CA') + 'T23:59:59.999').toISOString()
+  } else if (period === 'month') {
+    const d = new Date()
+    d.setDate(1)
+    startIso = new Date(d.toLocaleDateString('en-CA') + 'T00:00:00').toISOString()
+    endIso = new Date(new Date().toLocaleDateString('en-CA') + 'T23:59:59.999').toISOString()
+  } else if (from || to) {
+    if (from) startIso = new Date(from + 'T00:00:00').toISOString()
+    if (to) endIso = new Date(to + 'T23:59:59.999').toISOString()
+  }
 
   let query = supabaseAdmin
     .from('audit_log')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
-    .range(offset, offset + pageSize - 1)
 
   if (moduleFilter) {
     query = query.eq('module', moduleFilter)
   }
+
+  if (startIso) {
+    query = query.gte('created_at', startIso)
+  }
+  if (endIso) {
+    query = query.lte('created_at', endIso)
+  }
+
+  query = query.range(offset, offset + pageSize - 1)
 
   const { data: logs, count } = await query
 
@@ -126,16 +157,32 @@ export default async function AuditLogPage({
 
       {/* Stats */}
       <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(6, 1fr)', marginBottom: '24px' }}>
-        {Object.entries(MODULE_META).map(([mod, meta]) => (
-          <a
-            key={mod}
-            href={`/settings/audit-log${moduleFilter === mod ? '' : `?module=${mod}`}`}
-            className={`stat-card ${moduleFilter === mod ? 'stat-card-accent' : ''}`}
-            style={{ textDecoration: 'none', cursor: 'pointer', borderColor: moduleFilter === mod ? meta.color : undefined }}
-          >
-            <div className="stat-label">{meta.icon} {meta.label}</div>
-          </a>
-        ))}
+        {Object.entries(MODULE_META).map(([mod, meta]) => {
+          const params = new URLSearchParams()
+          if (moduleFilter !== mod) params.set('module', mod)
+          if (period) params.set('period', period)
+          if (from) params.set('from', from)
+          if (to) params.set('to', to)
+          const qs = params.toString()
+          const url = `/settings/audit-log${qs ? `?${qs}` : ''}`
+          return (
+            <a
+              key={mod}
+              href={url}
+              className={`stat-card ${moduleFilter === mod ? 'stat-card-accent' : ''}`}
+              style={{ textDecoration: 'none', cursor: 'pointer', borderColor: moduleFilter === mod ? meta.color : undefined }}
+            >
+              <div className="stat-label">{meta.icon} {meta.label}</div>
+            </a>
+          )
+        })}
+      </div>
+
+      {/* Date Filter Card */}
+      <div className="card" style={{ marginBottom: '24px', overflow: 'visible' }}>
+        <div className="card-body" style={{ padding: '16px 20px' }}>
+          <DateFilter period={period} from={from} to={to} moduleFilter={moduleFilter} />
+        </div>
       </div>
 
       {/* Table */}
@@ -146,8 +193,8 @@ export default async function AuditLogPage({
           </h3>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <span className="text-muted text-mono" style={{ fontSize: '12px' }}>{count ?? 0} total entries</span>
-            {moduleFilter && (
-              <a href="/settings/audit-log" className="btn btn-sm">Clear filter</a>
+            {(moduleFilter || period || from || to) && (
+              <a href="/settings/audit-log" className="btn btn-sm">Clear all filters</a>
             )}
           </div>
         </div>
@@ -168,7 +215,7 @@ export default async function AuditLogPage({
             <div style={{ display: 'flex', gap: '8px' }}>
               {currentPage > 1 && (
                 <a
-                  href={`/settings/audit-log?${moduleFilter ? `module=${moduleFilter}&` : ''}page=${currentPage - 1}`}
+                  href={`/settings/audit-log?${moduleFilter ? `module=${moduleFilter}&` : ''}${period ? `period=${period}&` : ''}${from ? `from=${from}&` : ''}${to ? `to=${to}&` : ''}page=${currentPage - 1}`}
                   className="btn btn-sm"
                 >
                   ← Previous
@@ -176,7 +223,7 @@ export default async function AuditLogPage({
               )}
               {currentPage < totalPages && (
                 <a
-                  href={`/settings/audit-log?${moduleFilter ? `module=${moduleFilter}&` : ''}page=${currentPage + 1}`}
+                  href={`/settings/audit-log?${moduleFilter ? `module=${moduleFilter}&` : ''}${period ? `period=${period}&` : ''}${from ? `from=${from}&` : ''}${to ? `to=${to}&` : ''}page=${currentPage + 1}`}
                   className="btn btn-sm"
                 >
                   Next →
