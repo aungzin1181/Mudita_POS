@@ -69,20 +69,20 @@ export default function ReportsClient({
               <div className="kpi-value">{eodData.totalRevenue.toLocaleString()} MMK</div>
               <div className="kpi-sub">{eodData.paidCount} paid transactions</div>
             </div>
-            <div className="kpi-card green">
-              <div className="kpi-label">Doctor Fees</div>
-              <div className="kpi-value">{eodData.doctorFees?.toLocaleString() ?? 0} MMK</div>
-              <div className="kpi-sub">Total consultation income</div>
-            </div>
-            <div className="kpi-card amber">
-              <div className="kpi-label">Profit on Products</div>
-              <div className="kpi-value">{eodData.productProfit?.toLocaleString() ?? 0} MMK</div>
-              <div className="kpi-sub">Calculated from buying price</div>
-            </div>
             <div className="kpi-card purple">
               <div className="kpi-label">Pharmacy Revenue</div>
               <div className="kpi-value">{eodData.pharmacyRevenue?.toLocaleString() ?? 0} MMK</div>
               <div className="kpi-sub">Product sales only</div>
+            </div>
+            <div className="kpi-card amber">
+              <div className="kpi-label">Profit On Pharmacy</div>
+              <div className="kpi-value">{eodData.productProfit?.toLocaleString() ?? 0} MMK</div>
+              <div className="kpi-sub">Calculated from buying price</div>
+            </div>
+            <div className="kpi-card green">
+              <div className="kpi-label">Consultation Fees</div>
+              <div className="kpi-value">{eodData.doctorFees?.toLocaleString() ?? 0} MMK</div>
+              <div className="kpi-sub">Total consultation income</div>
             </div>
           </div>
 
