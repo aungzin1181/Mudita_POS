@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Transaction } from '@/types/pos'
 import { markAsPaid, voidTransaction, applyDiscount } from '@/app/actions/transaction'
-import { CheckCircle, XCircle, Tag, Banknote, Smartphone, Loader2, Printer } from 'lucide-react'
+import { CheckCircle, XCircle, Tag, Banknote, Smartphone, Printer } from 'lucide-react'
 
 export default function PaymentPanel({ transaction }: { transaction: Transaction }) {
   const [loading, setLoading] = useState(false)
@@ -66,7 +66,7 @@ export default function PaymentPanel({ transaction }: { transaction: Transaction
   const isEditable = ['draft', 'open'].includes(transaction.status)
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* SUMMARY CARD */}
       <div className="card">
         <div className="card-header" style={{ padding: '8px 12px' }}>
@@ -81,109 +81,134 @@ export default function PaymentPanel({ transaction }: { transaction: Transaction
             </button>
           )}
         </div>
-        <div className="card-body" style={{ padding: '16px' }}>
-          <div className="flex justify-between mb-2">
+        <div className="card-body" style={{ padding: '12px' }}>
+          <div className="flex justify-between mb-1" style={{ fontSize: '11px' }}>
             <span className="text-muted">Subtotal</span>
             <span className="text-mono">{Number(transaction.subtotal).toLocaleString()} MMK</span>
           </div>
-          <div className="flex justify-between mb-2">
+          <div className="flex justify-between mb-1" style={{ fontSize: '11px' }}>
             <span className="text-muted">Discount</span>
             <span className="text-mono" style={{ color: 'var(--red)' }}>-{Number(transaction.discount_amount).toLocaleString()} MMK</span>
           </div>
           {transaction.discount_reason && (
-            <div className="text-mono text-muted mb-4" style={{ fontSize: '11px', fontStyle: 'italic' }}>
+            <div className="text-mono text-muted mb-2" style={{ fontSize: '10px', fontStyle: 'italic' }}>
               Reason: {transaction.discount_reason}
             </div>
           )}
-          <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '12px 0' }} />
-          <div className="flex justify-between items-center">
-            <span style={{ fontWeight: 600 }}>Total Amount</span>
-            <span className="text-serif" style={{ fontSize: '24px', fontWeight: 800, color: 'var(--accent)' }}>
+          <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '8px 0' }} />
+          <div className="flex justify-between items-center mb-3">
+            <span style={{ fontWeight: 600, fontSize: '12px' }}>Total Amount</span>
+            <span className="text-serif" style={{ fontSize: '20px', fontWeight: 800, color: 'var(--accent)' }}>
               {Number(transaction.total_amount).toLocaleString()} MMK
             </span>
           </div>
 
           {transaction.status === 'paid' && (
-            <div className="mt-4 p-3" style={{ background: 'var(--green-soft)', borderRadius: '8px', border: '1px solid var(--green)' }}>
-              <div className="flex items-center gap-2 text-green" style={{ fontWeight: 600, color: 'var(--green)' }}>
-                <CheckCircle size={16} /> Paid in Full
+            <div className="p-2" style={{ background: 'var(--green-soft)', borderRadius: '6px', border: '1px solid var(--green)' }}>
+              <div className="flex items-center gap-1.5 text-green" style={{ fontWeight: 600, color: 'var(--green)', fontSize: '11px' }}>
+                <CheckCircle size={14} /> Paid in Full
               </div>
-              <div className="text-mono text-muted mt-1" style={{ fontSize: '11px' }}>
+              <div className="text-mono text-muted mt-0.5" style={{ fontSize: '10px' }}>
                 via {transaction.payment_method?.toUpperCase()} · Change: {Number(transaction.change_amount ?? 0).toLocaleString()} MMK
               </div>
+            </div>
+          )}
+
+          {/* ACTIONS (DISCOUNT, CASH, KPAY) PANEL */}
+          {isEditable && (
+            <div className="flex flex-col gap-2 mt-2 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+              <div className="grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                <button 
+                  className="btn btn-primary justify-center btn-sm" 
+                  style={{ padding: '6px 12px', fontSize: '12px', height: '32px' }}
+                  onClick={() => handlePay('cash')} 
+                  disabled={loading || transaction.total_amount <= 0}
+                >
+                  <Banknote size={14} /> Cash
+                </button>
+                <button 
+                  className="btn btn-primary justify-center btn-sm" 
+                  style={{ padding: '6px 12px', fontSize: '12px', height: '32px' }}
+                  onClick={() => handlePay('kpay')} 
+                  disabled={loading || transaction.total_amount <= 0}
+                >
+                  <Smartphone size={14} /> KPay
+                </button>
+              </div>
+
+              <button 
+                className="btn btn-sm w-full justify-center" 
+                style={{ padding: '4px 8px', fontSize: '11px', height: '26px', border: '1px solid var(--border)' }} 
+                onClick={() => setShowDiscount(!showDiscount)}
+              >
+                <Tag size={12} />
+                {showDiscount ? 'Cancel Discount' : 'Apply Discount'}
+              </button>
+
+              {showDiscount && (
+                <form onSubmit={handleApplyDiscount} className="p-2 flex flex-col gap-2 mt-1" style={{ background: 'var(--surface-alt)', borderRadius: '6px', border: '1px solid var(--border)' }}>
+                  <div className="flex gap-2">
+                    <input 
+                      type="number" 
+                      placeholder="Amount" 
+                      className="form-input" 
+                      style={{ flex: 1, padding: '4px 8px', fontSize: '12px', height: '28px' }}
+                      value={discountAmount}
+                      onChange={e => setDiscountAmount(e.target.value)}
+                      required
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="Reason" 
+                      className="form-input" 
+                      style={{ flex: 1, padding: '4px 8px', fontSize: '12px', height: '28px' }}
+                      value={discountReason}
+                      onChange={e => setDiscountReason(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary btn-sm w-full justify-center" style={{ padding: '4px', fontSize: '11px', height: '26px' }} disabled={loading}>
+                    Confirm Discount
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* ADMIN VOID ACTION LINK */}
+          {(isEditable || transaction.status === 'paid') && (
+            <div style={{ marginTop: '10px', borderTop: '1px dashed var(--border)', paddingTop: '8px', textAlign: 'center' }}>
+              <button 
+                className="btn btn-danger btn-sm" 
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  color: 'var(--red)', 
+                  fontSize: '10px', 
+                  padding: '2px 8px',
+                  opacity: 0.7,
+                  margin: '0 auto',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }} 
+                onClick={handleVoid} 
+                disabled={loading}
+              >
+                <XCircle size={10} /> Void Transaction
+              </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* ACTIONS PANEL */}
-      {isEditable && (
-        <div className="card">
-          <div className="card-body flex flex-col gap-3">
-            <button className="btn w-full" style={{ justifyContent: 'center' }} onClick={() => setShowDiscount(!showDiscount)}>
-              <Tag size={18} />
-              {showDiscount ? 'Cancel Discount' : 'Apply Discount'}
-            </button>
-
-            {showDiscount && (
-              <form onSubmit={handleApplyDiscount} className="p-3 mb-2" style={{ background: 'var(--bg)', borderRadius: '8px' }}>
-                <input 
-                  type="number" 
-                  placeholder="Amount" 
-                  className="form-input mb-2" 
-                  value={discountAmount}
-                  onChange={e => setDiscountAmount(e.target.value)}
-                  required
-                />
-                <input 
-                  type="text" 
-                  placeholder="Reason" 
-                  className="form-input mb-2" 
-                  value={discountReason}
-                  onChange={e => setDiscountReason(e.target.value)}
-                  required
-                />
-                <button type="submit" className="btn btn-primary w-full justify-center" disabled={loading}>
-                  Submit Discount
-                </button>
-              </form>
-            )}
-
-            <div className="grid gap-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              <button className="btn btn-primary justify-center" onClick={() => handlePay('cash')} disabled={loading || transaction.total_amount <= 0}>
-                <Banknote size={18} /> Cash
-              </button>
-              <button className="btn btn-primary justify-center" onClick={() => handlePay('kpay')} disabled={loading || transaction.total_amount <= 0}>
-                <Smartphone size={18} /> KPay
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ADMIN PANEL */}
-      {(isEditable || transaction.status === 'paid') && (
-        <div className="card" style={{ background: 'var(--surface-alt)' }}>
-          <div className="card-body">
-            <button className="btn btn-danger w-full justify-center" onClick={handleVoid} disabled={loading}>
-              <XCircle size={18} /> Void Transaction
-            </button>
-            <div className="text-mono text-muted mt-2" style={{ fontSize: '9px', textAlign: 'center', textTransform: 'uppercase' }}>
-              Requires Admin Privileges
-            </div>
-          </div>
-        </div>
-      )}
-
       {transaction.status === 'voided' && (
-        <div className="card" style={{ background: 'var(--red-soft)', borderColor: 'var(--red)' }}>
-          <div className="card-body">
-            <div className="flex items-center gap-2 text-red" style={{ fontWeight: 600, color: 'var(--red)' }}>
-              <XCircle size={16} /> VOIDED
-            </div>
-            <div className="text-mono text-muted mt-1" style={{ fontSize: '11px' }}>
-              Reason: {transaction.void_reason}
-            </div>
+        <div className="card" style={{ background: 'var(--red-soft)', borderColor: 'var(--red)', padding: '8px 12px' }}>
+          <div className="flex items-center gap-1.5 text-red" style={{ fontWeight: 600, color: 'var(--red)', fontSize: '11px' }}>
+            <XCircle size={14} /> VOIDED
+          </div>
+          <div className="text-mono text-muted mt-0.5" style={{ fontSize: '10px' }}>
+            Reason: {transaction.void_reason}
           </div>
         </div>
       )}
