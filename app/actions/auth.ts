@@ -79,6 +79,7 @@ export async function loginWithPassword(
     entity_id: userId,
     entity_label: data.user.email ?? undefined,
     ip_address: ip,
+    new_data: deviceInfo ? { ...deviceInfo } : undefined,
   })
 
   redirect('/dashboard')

@@ -29,6 +29,9 @@ type LoginAttempt = {
   success: boolean
   stage: string | null
   attempted_at: string
+  os: string | null
+  device_type: string | null
+  browser: string | null
 }
 
 type Props = {
@@ -503,6 +506,9 @@ function LoginAttemptsTab({ attempts }: { attempts: LoginAttempt[] }) {
                 <th>Time</th>
                 <th>Email</th>
                 <th>IP Address</th>
+                <th>OS</th>
+                <th>Device</th>
+                <th>Browser</th>
                 <th>Stage</th>
                 <th>Result</th>
               </tr>
@@ -510,7 +516,7 @@ function LoginAttemptsTab({ attempts }: { attempts: LoginAttempt[] }) {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5}>
+                  <td colSpan={8}>
                     <div className="empty-state">
                       <div className="empty-state-icon">📋</div>
                       <div className="empty-state-title">No login attempts</div>
@@ -519,11 +525,23 @@ function LoginAttemptsTab({ attempts }: { attempts: LoginAttempt[] }) {
                 </tr>
               ) : filtered.map(a => (
                 <tr key={a.id}>
-                  <td style={{ fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--ink-muted)' }}>
+                  <td style={{ fontSize: 13, fontFamily: 'var(--mono)', color: 'var(--ink-muted)', whiteSpace: 'nowrap' }}>
                     {new Date(a.attempted_at).toLocaleString()}
                   </td>
                   <td style={{ fontSize: 13 }}>{a.email}</td>
                   <td style={{ fontSize: 13, fontFamily: 'var(--mono)' }}>{a.ip_address ?? '—'}</td>
+                  <td style={{ fontSize: 12 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      {a.os === 'Windows' && '🪟'}
+                      {a.os === 'macOS' && '🍎'}
+                      {a.os === 'iOS' && '📱'}
+                      {a.os === 'Android' && '🤖'}
+                      {a.os === 'Linux' && '🐧'}
+                      {a.os ?? '—'}
+                    </span>
+                  </td>
+                  <td style={{ fontSize: 12, color: 'var(--ink-muted)' }}>{a.device_type ?? '—'}</td>
+                  <td style={{ fontSize: 12, color: 'var(--ink-muted)' }}>{a.browser ?? '—'}</td>
                   <td>
                     {a.stage && (
                       <span className="badge" style={{ background: 'var(--surface-alt)', color: 'var(--ink-muted)' }}>
