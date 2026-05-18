@@ -45,14 +45,14 @@ export default async function PrintTransactionPage({ params }: { params: Promise
           background: white;
           color: black;
           padding: 20px;
-          font-family: 'DM Mono', monospace;
+          font-family: 'DM Mono', system-ui, -apple-system, sans-serif;
           font-size: 12px;
-          line-height: 1.4;
+          line-height: 1.5;
           border: 1px solid #eee;
         }
         .receipt-header { text-align: center; margin-bottom: 20px; }
-        .receipt-header h2 { margin: 0; font-size: 16px; font-weight: 800; }
-        .receipt-header p { margin: 2px 0; color: #666; font-size: 10px; }
+        .receipt-header h2 { margin: 0; font-size: 15px; font-weight: 800; line-height: 1.5; }
+        .receipt-header p { margin: 3px 0; color: #444; font-size: 10px; line-height: 1.4; }
         .receipt-divider { border-top: 1px dashed #ccc; margin: 10px 0; }
         .receipt-row { display: flex; justify-content: space-between; margin: 4px 0; }
         .receipt-item-row { margin: 8px 0; }
@@ -64,10 +64,10 @@ export default async function PrintTransactionPage({ params }: { params: Promise
 
       <div className="print-receipt">
         <div className="receipt-header">
-          <h2>MUDITA CLINIC</h2>
+          <h2>မုဒိတာ အထွေထွေရောဂါကုဆေးခန်း</h2>
           <p>Medical & Surgical Center</p>
-          <p>Tel: +95 9 123 456 789</p>
-          <p>Yangon, Myanmar</p>
+          <p>Tel: 09-882228790, 09-985839302</p>
+          <p style={{ marginTop: '4px', fontSize: '9px' }}>ကျည်တောင်ကန် ပိတောက်လမ်းမကြီး အမှတ်တစ်ရပ်ကွက် ပုပ္ပသီရိနေပြည်တော်</p>
         </div>
 
         <div className="receipt-divider" />
